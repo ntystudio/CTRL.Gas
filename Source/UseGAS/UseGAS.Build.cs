@@ -25,6 +25,7 @@ public class UseGAS : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"GameplayTags"
 			}
 		);
 	}

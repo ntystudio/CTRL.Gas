@@ -7,6 +7,11 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 
+UAnimInstance* UUgWaitForAnimNotifyTask::GetAnimInstance() const
+{
+	return AnimInstance.Get();
+}
+
 TArray<FName> UUgWaitForAnimNotifyTask::GetNotifyNames() const
 {
 	TArray<FName> NotifyNames;
@@ -52,9 +57,9 @@ void UUgWaitForAnimNotifyTask::Activate()
 		return END_WITH_ERROR(Error, TEXT("UgWaitForAnimNotifyTask: Expected montage %s is not playing"), *GetNameSafe(ExpectedMontage));
 	}
 
-	AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UUgWaitForAnimNotifyTask::OnNotifyBeginReceived);
-	AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UUgWaitForAnimNotifyTask::OnNotifyEndReceived);
-	AnimInstance->OnMontageEnded.AddDynamic(this, &UUgWaitForAnimNotifyTask::OnMontageEnded);
+	AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &ThisClass::OnNotifyBeginReceived);
+	AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &ThisClass::OnNotifyEndReceived);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &ThisClass::OnMontageEnded);
 }
 
 void UUgWaitForAnimNotifyTask::RemoveBindings() const

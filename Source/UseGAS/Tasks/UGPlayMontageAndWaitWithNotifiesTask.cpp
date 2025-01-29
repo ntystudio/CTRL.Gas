@@ -188,18 +188,18 @@
 // 	{
 // 		// Playing a montage could potentially fire off a callback into game code which could kill this ability! Early out if we are pending kill.
 // 		if (!ShouldBroadcastAbilityTaskDelegates()) { return; }
-// 		AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UUGPlayMontageAndWaitWithNotifiesTask::OnNotifyBeginReceived);
-// 		AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UUGPlayMontageAndWaitWithNotifiesTask::OnNotifyEndReceived);
+// 		AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &ThisClass::OnNotifyBeginReceived);
+// 		AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &ThisClass::OnNotifyEndReceived);
 //
-// 		InterruptedHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UUGPlayMontageAndWaitWithNotifiesTask::OnGameplayAbilityCancelled);
+// 		InterruptedHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &ThisClass::OnGameplayAbilityCancelled);
 //
-// 		BlendedInDelegate.BindUObject(this, &UUGPlayMontageAndWaitWithNotifiesTask::OnMontageBlendedIn);
+// 		BlendedInDelegate.BindUObject(this, &ThisClass::OnMontageBlendedIn);
 // 		AnimInstance->Montage_SetBlendedInDelegate(BlendedInDelegate, MontageToPlay);
 //
-// 		BlendingOutDelegate.BindUObject(this, &UUGPlayMontageAndWaitWithNotifiesTask::OnMontageBlendingOut);
+// 		BlendingOutDelegate.BindUObject(this, &ThisClass::OnMontageBlendingOut);
 // 		AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
 //
-// 		MontageEndedDelegate.BindUObject(this, &UUGPlayMontageAndWaitWithNotifiesTask::OnMontageEnded);
+// 		MontageEndedDelegate.BindUObject(this, &ThisClass::OnMontageEnded);
 // 		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
 //
 // 		if (auto const Character = Cast<ACharacter>(GetAvatarActor()))

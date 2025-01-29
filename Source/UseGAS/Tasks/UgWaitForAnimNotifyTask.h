@@ -32,6 +32,9 @@ public:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UAnimInstance> AnimInstance;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UAnimInstance* GetAnimInstance() const;
+
 	UPROPERTY(BlueprintReadOnly, meta=(GetOptions="GetNotifyNames"))
 	FName ListenForNotify;
 
