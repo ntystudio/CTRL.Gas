@@ -1,6 +1,8 @@
 ﻿// SPDX-FileCopyrightText: 2025 NTY.studio
 #include "UgAbilityTask.h"
 
+#include "UseGAS/UseGASAbilitySystemComponent.h"
+
 void UUgAbilityTask::Activate()
 {
 	Super::Activate();
@@ -25,4 +27,9 @@ void UUgAbilityTask::OnDestroy(bool const bInOwnerFinished)
 		OnCompleted.Broadcast();
 		OnCompleted.Clear();
 	}
+}
+
+UUseGASAbilitySystemComponent* UUgAbilityTask::GetASC() const
+{
+	return Cast<UUseGASAbilitySystemComponent>(AbilitySystemComponent.Get());
 }

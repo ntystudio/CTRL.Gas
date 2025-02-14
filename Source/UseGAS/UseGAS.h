@@ -4,6 +4,10 @@
 
 #include "Modules/ModuleManager.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogUseGAS, Log, All);
+
+#define USEGAS_LOG(Verbosity, ...) UE_LOG(LogUseGAS, Verbosity, ##__VA_ARGS__)
+
 class FUseGASModule : public IModuleInterface
 {
 public:

@@ -14,6 +14,7 @@ public class UseGAS : ModuleRules
 				"Core",
 				"GameplayAbilities",
 				"GameplayTasks",
+				"PhysicsCore",
 			}
 		);
 
@@ -23,10 +24,14 @@ public class UseGAS : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"GameplayTags",
+				"PhysicsCore",
 				"Slate",
 				"SlateCore",
-				"GameplayTags"
 			}
 		);
+
+		SetupGameplayDebuggerSupport(Target);
+		SetupIrisSupport(Target);
 	}
 }

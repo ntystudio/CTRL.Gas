@@ -16,6 +16,7 @@
 	EndTask(); \
 }())
 
+class UUseGASAbilitySystemComponent;
 /**
  * 
  */
@@ -26,15 +27,18 @@ class USEGAS_API UUgAbilityTask : public UAbilityTask
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUGAbilityTaskDelegate);
-	
+
 	UPROPERTY(BlueprintAssignable)
 	FUGAbilityTaskDelegate OnActivated;
 
 	UPROPERTY(BlueprintAssignable)
 	FUGAbilityTaskDelegate OnCompleted;
-	
+
 	UPROPERTY(BlueprintAssignable)
 	FUGAbilityTaskDelegate OnError;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UUseGASAbilitySystemComponent* GetASC() const;
 
 	virtual void Activate() override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
