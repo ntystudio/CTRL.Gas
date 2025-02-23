@@ -12,6 +12,7 @@
 
 #include "UseGASUtils.generated.h"
 
+using FUseGASEffectFactoryFn = TFunction<UGameplayEffect*(UGameplayEffect*)>;
 /**
  * 
  */
@@ -39,15 +40,30 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static FActiveGameplayEffectHandle AddInheritedGameplayTagsEffect(UAbilitySystemComponent* ASC, FInheritedTagContainer const& TagChanges, UObject* SourceObject);
 
+	UFUNCTION(BlueprintCallable)
+	static FActiveGameplayEffectHandle K2_AddInheritedGameplayTagsEffectDuration(
+		UAbilitySystemComponent* ASC,
+		FInheritedTagContainer const& TagChanges,
+		float Duration,
+		UObject* SourceObject
+	);
+
+	// Convenience function for making a new GameplayEffect with the given name and factory function.
+	// Uses the following defaults (override as needed in the factory fn):
+	// * DurationPolicy = EGameplayEffectDurationType::Infinite;
+	// * StackingType = EGameplayEffectStackingType::AggregateByTarget;
+	// * StackLimitCount = 1;
+	static UGameplayEffect* MakeEffect(UAbilitySystemComponent* ASC, FName const& BaseName, FUseGASEffectFactoryFn Factory = nullptr);
+
 	static FActiveGameplayEffectHandle AddInheritedGameplayTagsEffectDuration(
 		UAbilitySystemComponent* ASC,
 		FInheritedTagContainer const& TagChanges,
 		FGameplayEffectModifierMagnitude Duration,
-		UObject* SourceObject
+		UObject const* SourceObject
 	);
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor"))
 	void GetActorGameplayTags(AActor const* Actor, FGameplayTagContainer& OutGameplayTags);
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Object"))
 	static FGameplayTagContainer GetGameplayTags(UObject const* Object);
 
 	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue"))
@@ -57,4 +73,25 @@ public:
 	static void AssignAbilitySetByCallerMagnitude(UGameplayAbility* Ability, FGameplayTag MagnitudeTag, double MagnitudeValue);
 
 	static FPredictionKey GetOriginalPredictionKey(FGameplayAbilitySpec const& Spec);
+
+
+	
+	
+	
+	// Find all AttributeSets on Actor
+	// When the ASC is initialized, it will automatically find and add all AttributeSets
+	// on the owner actor e.g. PlayerState
+	// If you change who owns the ASC, you will normally need to manually add the AttributeSets or move
+	// them to the owner.
+	// Instead, you can use this function to find them automatically so your ASC init code remains basically the same.
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Target"))
+	static TArray<UAttributeSet*> FindAttributeSets(AActor const* Target);
+
+	// Lists all attributes in an AttributeSet class
+	UFUNCTION(BlueprintCallable, BlueprintPure, DisplayName = "List Attributes")
+	static TArray<FGameplayAttribute> K2_ListAttributes(TSubclassOf<UAttributeSet> AttributeSet);
+
+	// templated version of ListAttributes
+	template <typename T>
+	static TArray<FGameplayAttribute> ListAttributes();
 };

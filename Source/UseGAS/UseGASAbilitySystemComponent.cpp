@@ -8,17 +8,17 @@
 #include "UseGAS/UseGASUtils.h"
 #include "UseGAS/Abilities/UseGASAbility.h"
 
-int32 UUseGASAbilitySystemComponent::GetItemLevel(float const InLevel) const
+int32 UUseGASAbilitySystemComponent::GetLevelOrDefault(float const InLevel) const
 {
 	return InLevel == -1.0f ? GetLevel() : FMath::Max(1, FMath::Floor(InLevel));
 }
 
-int32 UUseGASAbilitySystemComponent::GetItemLevel(int32 const InLevel) const
+int32 UUseGASAbilitySystemComponent::GetLevelOrDefault(int32 const InLevel) const
 {
 	return InLevel == -1 ? GetLevel() : FMath::Max(1, InLevel);
 }
 
-UUseGASAbilitySystemComponent* UUseGASAbilitySystemComponent::Get(UObject const* SourceObject, bool bWarnIfNotFound)
+UUseGASAbilitySystemComponent* UUseGASAbilitySystemComponent::Get(UObject const* SourceObject, bool const bWarnIfNotFound)
 {
 	auto* Actor = Cast<AActor>(SourceObject);
 	if (!Actor)
@@ -62,27 +62,7 @@ UUseGASAbilitySystemComponent* UUseGASAbilitySystemComponent::GetEnsured(UObject
 	return ASC;
 }
 
-TArray<UAttributeSet*> UUseGASAbilitySystemComponent::FindAttributes(AActor const* Target)
-{
-	TArray<UObject*> ChildObjects;
-	GetObjectsWithOuter(Target, ChildObjects, false, RF_NoFlags, EInternalObjectFlags::Garbage);
-	TArray<UAttributeSet*> Attributes;
-	for (auto* Obj : ChildObjects)
-	{
-		if (auto* AttributeSet = Cast<UAttributeSet>(Obj))
-		{
-			Attributes.AddUnique(AttributeSet);
-		}
-	}
-	return MoveTemp(Attributes);
-}
 
-TArray<FGameplayAttribute> UUseGASAbilitySystemComponent::ListAttributes(TSubclassOf<UAttributeSet> AttributeSet)
-{
-	auto Attributes = TArray<FGameplayAttribute>();
-	UAttributeSet::GetAttributesFromSetClass(AttributeSet, Attributes);
-	return MoveTemp(Attributes);
-}
 
 void UUseGASAbilitySystemComponent::RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle>& Handles)
 {
@@ -318,7 +298,7 @@ void UUseGASAbilitySystemComponent::ClearAbilityInput()
 FActiveGameplayEffectHandle UUseGASAbilitySystemComponent::ApplySpecToSelf(
 	UObject const* InSourceObject,
 	TSubclassOf<UGameplayEffect> const EffectClass,
-	TOptional<FUseGASEffectSpecFactoryFn> const SpecFactory
+	FUseGASEffectSpecFactoryFn const SpecFactory
 )
 {
 	if (!IsValid(InSourceObject)) return {};
@@ -330,7 +310,7 @@ FActiveGameplayEffectHandle UUseGASAbilitySystemComponent::ApplySpecToSelf(
 	if (!Spec.IsValid()) return {};
 	if (SpecFactory)
 	{
-		Spec = SpecFactory.GetValue()(Spec);
+		Spec = SpecFactory(Spec);
 	}
 	if (!Spec.IsValid()) return {};
 	return ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
@@ -362,4 +342,16 @@ bool UUseGASAbilitySystemComponent::CanApplyAttributeModifiers(FGameplayEffectSp
 		}
 	}
 	return true;
+}
+
+bool UUseGASAbilitySystemComponent::CanApplyAttributeModifiers(TSubclassOf<UGameplayEffect> EffectClass, FUseGASEffectSpecFactoryFn SpecFactory) const
+{
+	auto Spec = MakeOutgoingSpec(EffectClass, GetLevel(), MakeEffectContext());
+	if (!Spec.IsValid()) return false;
+	if (SpecFactory)
+	{
+		Spec = SpecFactory(Spec);
+	}
+
+	return CanApplyAttributeModifiers(Spec);
 }

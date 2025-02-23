@@ -10,7 +10,8 @@
 
 #include "UseGAS/UseGAS.h"
 
-void UUseGASUtils::AssignAbilitySetByCallerMagnitude(UGameplayAbility* Ability, FGameplayTag const MagnitudeTag, double const MagnitudeValue) {
+void UUseGASUtils::AssignAbilitySetByCallerMagnitude(UGameplayAbility* Ability, FGameplayTag const MagnitudeTag, double const MagnitudeValue)
+{
 	if (!Ability) return;
 	if (!MagnitudeTag.IsValid()) return;
 	auto const Spec = Ability->GetCurrentAbilitySpec();
@@ -34,7 +35,6 @@ bool UUseGASUtils::IsValidAbilitySpec(UAbilitySystemComponent const* ASC, FGamep
 	auto const* AbilitySpec = ASC->FindAbilitySpecFromHandle(Handle);
 	return !!(AbilitySpec && IsValid(AbilitySpec->Ability));
 }
-
 
 FGameplayEffectSpec UUseGASUtils::K2_GetEffectSpec(FGameplayEffectSpecHandle const& Handle, bool& bSuccess)
 {
@@ -109,6 +109,7 @@ FGameplayAbilitySpecHandle UUseGASUtils::GetAbilitySpecHandle(UGameplayAbility c
 	}
 	return {};
 }
+
 FActiveGameplayEffectHandle UUseGASUtils::AddGameplayTagsEffect(UAbilitySystemComponent* ASC, FGameplayTagContainer const& Tags, UObject* SourceObject)
 {
 	ensure(ASC);
@@ -117,19 +118,22 @@ FActiveGameplayEffectHandle UUseGASUtils::AddGameplayTagsEffect(UAbilitySystemCo
 	{
 		EffectContext.AddSourceObject(SourceObject);
 	}
-	auto const Name = MakeUniqueObjectName(ASC, UGameplayEffect::StaticClass(), TEXT("AddGameplayTagsEffect"));
-	auto* TagsEffect = NewObject<UGameplayEffect>(ASC, Name);
-	TagsEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
-	TagsEffect->StackingType = EGameplayEffectStackingType::AggregateByTarget;
-	TagsEffect->StackLimitCount = 1;
-	auto& GrantTagsComponent = TagsEffect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
-	FInheritedTagContainer TagChanges;
-	for (auto const& Tag : Tags)
-	{
-		TagChanges.AddTag(Tag);
-	}
-	GrantTagsComponent.SetAndApplyTargetTagChanges(TagChanges);
-	USEGAS_LOG(Verbose, TEXT("%s: Add: %s Remove: %s"), *Name.ToString(), *TagChanges.Added.ToStringSimple(), *TagChanges.Removed.ToStringSimple());
+	auto const* TagsEffect = MakeEffect(
+		ASC,
+		TEXT("AddGameplayTagsEffect"),
+		[&Tags](UGameplayEffect* Effect)
+		{
+			FInheritedTagContainer TagChanges;
+			for (auto const& Tag : Tags)
+			{
+				TagChanges.AddTag(Tag);
+			}
+			auto& GrantTagsComponent = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
+			GrantTagsComponent.SetAndApplyTargetTagChanges(TagChanges);
+			return Effect;
+		}
+	);
+	USEGAS_LOG(Verbose, TEXT("%s: Add: %s"), *TagsEffect->GetName(), *Tags.ToStringSimple());
 	return ASC->ApplyGameplayEffectToSelf(TagsEffect, 1.0f, EffectContext);
 }
 
@@ -141,19 +145,46 @@ FActiveGameplayEffectHandle UUseGASUtils::AddInheritedGameplayTagsEffect(UAbilit
 	{
 		EffectContext.AddSourceObject(SourceObject);
 	}
-	auto const Name = MakeUniqueObjectName(ASC, UGameplayEffect::StaticClass(), TEXT("AddInheritedGameplayTagsEffect"));
-	auto* TagsEffect = NewObject<UGameplayEffect>(ASC, Name);
-	TagsEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
-	TagsEffect->StackingType = EGameplayEffectStackingType::AggregateByTarget;
-	TagsEffect->StackLimitCount = 1;
-	auto& GrantTagsComponent = TagsEffect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
-	GrantTagsComponent.SetAndApplyTargetTagChanges(TagChanges);
-	USEGAS_LOG(Verbose, TEXT("%s: Add: %s Remove: %s"), *Name.ToString(), *TagChanges.Added.ToStringSimple(), *TagChanges.Removed.ToStringSimple());
+	auto const* TagsEffect = MakeEffect(
+		ASC,
+		TEXT("AddInheritedGameplayTagsEffect"),
+		[&TagChanges](UGameplayEffect* Effect)
+		{
+			auto& GrantTagsComponent = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
+			GrantTagsComponent.SetAndApplyTargetTagChanges(TagChanges);
+			return Effect;
+		}
+	);
+	USEGAS_LOG(Verbose, TEXT("%s: Add: %s Remove: %s"), *TagsEffect->GetName(), *TagChanges.Added.ToStringSimple(), *TagChanges.Removed.ToStringSimple());
 	return ASC->ApplyGameplayEffectToSelf(TagsEffect, 1.0f, EffectContext);
 }
 
+FActiveGameplayEffectHandle UUseGASUtils::K2_AddInheritedGameplayTagsEffectDuration(UAbilitySystemComponent* ASC, FInheritedTagContainer const& TagChanges, float Duration, UObject* SourceObject)
+{
+	return AddInheritedGameplayTagsEffectDuration(ASC, TagChanges, FGameplayEffectModifierMagnitude(Duration), SourceObject);
+}
 
-FActiveGameplayEffectHandle UUseGASUtils::AddInheritedGameplayTagsEffectDuration(UAbilitySystemComponent* ASC, FInheritedTagContainer const& TagChanges, FGameplayEffectModifierMagnitude Duration, UObject* SourceObject)
+UGameplayEffect* UUseGASUtils::MakeEffect(UAbilitySystemComponent* ASC, FName const& BaseName, FUseGASEffectFactoryFn Factory)
+{
+	FGameplayEffectModifierMagnitude Duration;
+	auto const Name = MakeUniqueObjectName(ASC, UGameplayEffect::StaticClass(), BaseName);
+	auto Effect = NewObject<UGameplayEffect>(ASC, Name);
+	Effect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+	Effect->StackingType = EGameplayEffectStackingType::AggregateByTarget;
+	Effect->StackLimitCount = 1;
+	if (Factory)
+	{
+		Effect = Factory(Effect);
+	}
+	return Effect;
+}
+
+FActiveGameplayEffectHandle UUseGASUtils::AddInheritedGameplayTagsEffectDuration(
+	UAbilitySystemComponent* ASC,
+	FInheritedTagContainer const& TagChanges,
+	FGameplayEffectModifierMagnitude Duration,
+	UObject const* SourceObject
+)
 {
 	ensure(ASC);
 	auto EffectContext = ASC->MakeEffectContext();
@@ -161,16 +192,20 @@ FActiveGameplayEffectHandle UUseGASUtils::AddInheritedGameplayTagsEffectDuration
 	{
 		EffectContext.AddSourceObject(SourceObject);
 	}
-	
-	auto const Name = MakeUniqueObjectName(ASC, UGameplayEffect::StaticClass(), TEXT("AddInheritedGameplayTagsEffectDuration"));
-	auto* TagsEffect = NewObject<UGameplayEffect>(ASC, Name);
-	TagsEffect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
-	TagsEffect->DurationMagnitude = Duration;
-	TagsEffect->StackingType = EGameplayEffectStackingType::AggregateByTarget;
-	TagsEffect->StackLimitCount = 1;
-	auto& GrantTagsComponent = TagsEffect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
-	GrantTagsComponent.SetAndApplyTargetTagChanges(TagChanges);
-	USEGAS_LOG(Verbose, TEXT("%s: Add: %s Remove: %s"), *Name.ToString(), *TagChanges.Added.ToStringSimple(), *TagChanges.Removed.ToStringSimple());
+
+	auto const* TagsEffect = MakeEffect(
+		ASC,
+		TEXT("AddInheritedGameplayTagsEffectDuration"),
+		[&TagChanges, &Duration](UGameplayEffect* Effect)
+		{
+			Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
+			Effect->DurationMagnitude = Duration;
+			auto& GrantTagsComponent = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
+			GrantTagsComponent.SetAndApplyTargetTagChanges(TagChanges);
+			return Effect;
+		}
+	);
+	USEGAS_LOG(Verbose, TEXT("%s: Add: %s Remove: %s"), *TagsEffect->GetName(), *TagChanges.Added.ToStringSimple(), *TagChanges.Removed.ToStringSimple());
 	return ASC->ApplyGameplayEffectToSelf(TagsEffect, 1.0f, EffectContext);
 }
 
@@ -186,5 +221,33 @@ FGameplayTagContainer UUseGASUtils::GetGameplayTags(UObject const* Object)
 	{
 		AsTagInterface->GetOwnedGameplayTags(Tags);
 	}
-	return Tags;
+	return MoveTemp(Tags);
+}
+
+TArray<FGameplayAttribute> UUseGASUtils::K2_ListAttributes(TSubclassOf<UAttributeSet> const AttributeSet)
+{
+	auto Attributes = TArray<FGameplayAttribute>();
+	UAttributeSet::GetAttributesFromSetClass(AttributeSet, Attributes);
+	return MoveTemp(Attributes);
+}
+
+template <typename T>
+TArray<FGameplayAttribute> UUseGASUtils::ListAttributes()
+{
+	return K2_ListAttributes(T::StaticClass());
+}
+
+TArray<UAttributeSet*> UUseGASUtils::FindAttributeSets(AActor const* Target)
+{
+	TArray<UObject*> ChildObjects;
+	GetObjectsWithOuter(Target, ChildObjects, false, RF_NoFlags, EInternalObjectFlags::Garbage);
+	TArray<UAttributeSet*> Attributes;
+	for (auto* Obj : ChildObjects)
+	{
+		if (auto* AttributeSet = Cast<UAttributeSet>(Obj))
+		{
+			Attributes.AddUnique(AttributeSet);
+		}
+	}
+	return MoveTemp(Attributes);
 }
