@@ -16,6 +16,11 @@ class USEGAS_API UUseGASAbilitySystemComponent : public UAbilitySystemComponent
 	GENERATED_BODY()
 
 public:
+	// Find the AbilitySystemComponent on an Actor, ActorComponent, or UObject (via TypedOuter).
+	static ThisClass* Get(UObject const* SourceObject, bool bWarnIfNotFound = true);
+	static ThisClass* GetChecked(UObject const* SourceObject);
+	static ThisClass* GetEnsured(UObject const* SourceObject);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static TArray<UAttributeSet*> FindAttributes(AActor const* Target);
 
@@ -32,8 +37,10 @@ public:
 
 	FActiveGameplayEffectHandle ApplySpecToSelf(UObject const* InSourceObject, TSubclassOf<UGameplayEffect> EffectClass, TOptional<FUseGASEffectSpecFactoryFn> SpecFactory = {});
 
+	bool CanApplyAttributeModifiers(FGameplayEffectSpecHandle const& Spec) const;
+
 	UFUNCTION(BlueprintCallable)
-	void RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle> Handles);
+	void RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle>& Handles);
 
 	virtual int32 GetLevel() const { return DefaultLevel; }
 	virtual int32 GetItemLevel(float InLevel) const;

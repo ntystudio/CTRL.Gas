@@ -2,6 +2,8 @@
 
 #include "UseGAS/UseGASAbilitySystemComponent.h"
 
+#include "AbilitySystemGlobals.h"
+
 #include "UseGAS/UseGAS.h"
 #include "UseGAS/UseGASUtils.h"
 #include "UseGAS/Abilities/UseGASAbility.h"
@@ -14,6 +16,50 @@ int32 UUseGASAbilitySystemComponent::GetItemLevel(float const InLevel) const
 int32 UUseGASAbilitySystemComponent::GetItemLevel(int32 const InLevel) const
 {
 	return InLevel == -1 ? GetLevel() : FMath::Max(1, InLevel);
+}
+
+UUseGASAbilitySystemComponent* UUseGASAbilitySystemComponent::Get(UObject const* SourceObject, bool bWarnIfNotFound)
+{
+	auto* Actor = Cast<AActor>(SourceObject);
+	if (!Actor)
+	{
+		if (auto const Component = Cast<UActorComponent>(SourceObject))
+		{
+			Actor = Component->GetOwner();
+		}
+		else
+		{
+			Actor = SourceObject->GetTypedOuter<AActor>();
+		}
+	}
+	auto const ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor);
+	auto const OurASC = Cast<ThisClass>(ASC);
+	if (bWarnIfNotFound && !OurASC)
+	{
+		if (ASC)
+		{
+			USEGAS_LOG(Warning, TEXT("Get: Actor %s has an ASC but it is not a %s."), *GetNameSafe(Actor), *ThisClass::StaticClass()->GetName());
+		}
+		else
+		{
+			USEGAS_LOG(Warning, TEXT("Get: Actor %s does not have a %s."), *GetNameSafe(Actor), *ThisClass::StaticClass()->GetName());
+		}
+	}
+	return OurASC;
+}
+
+UUseGASAbilitySystemComponent* UUseGASAbilitySystemComponent::GetChecked(UObject const* SourceObject)
+{
+	auto const ASC = Get(SourceObject);
+	check(IsValid(ASC));
+	return ASC;
+}
+
+UUseGASAbilitySystemComponent* UUseGASAbilitySystemComponent::GetEnsured(UObject const* SourceObject)
+{
+	auto const ASC = Get(SourceObject);
+	ensure(IsValid(ASC));
+	return ASC;
 }
 
 TArray<UAttributeSet*> UUseGASAbilitySystemComponent::FindAttributes(AActor const* Target)
@@ -38,10 +84,12 @@ TArray<FGameplayAttribute> UUseGASAbilitySystemComponent::ListAttributes(TSubcla
 	return MoveTemp(Attributes);
 }
 
-void UUseGASAbilitySystemComponent::RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle> Handles)
+void UUseGASAbilitySystemComponent::RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle>& Handles)
 {
 	if (!Handles.Num()) return;
-	for (auto const EffectHandle : Handles)
+	auto CurrentHandles = Handles;
+	Handles.Reset();
+	for (auto const EffectHandle : CurrentHandles)
 	{
 		if (EffectHandle.IsValid())
 		{
@@ -286,4 +334,32 @@ FActiveGameplayEffectHandle UUseGASAbilitySystemComponent::ApplySpecToSelf(
 	}
 	if (!Spec.IsValid()) return {};
 	return ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+}
+
+//~ Adapted from FActiveGameplayEffectsContainer::CanApplyAttributeModifiers
+bool UUseGASAbilitySystemComponent::CanApplyAttributeModifiers(FGameplayEffectSpecHandle const& SpecHandle) const
+{
+	if (!SpecHandle.IsValid()) return false;
+	auto Spec = *SpecHandle.Data.Get();
+	Spec.CalculateModifierMagnitudes();
+	for (int32 ModIdx = 0; ModIdx < Spec.Modifiers.Num(); ++ModIdx)
+	{
+		FGameplayModifierInfo const& ModDef = Spec.Def->Modifiers[ModIdx];
+		FModifierSpec const& ModSpec = Spec.Modifiers[ModIdx];
+
+		// It only makes sense to check additive operators
+		if (ModDef.ModifierOp == EGameplayModOp::Additive)
+		{
+			if (!ModDef.Attribute.IsValid()) continue;
+			UAttributeSet const* Set = GetAttributeSubobject(ModDef.Attribute.GetAttributeSetClass());
+			float const CurrentValue = ModDef.Attribute.GetNumericValueChecked(Set);
+			float const CostValue = ModSpec.GetEvaluatedMagnitude();
+
+			if (CurrentValue + CostValue < 0.f)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
