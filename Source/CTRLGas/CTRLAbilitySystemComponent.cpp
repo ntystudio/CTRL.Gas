@@ -1,6 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2025 NTY.studio
 
-#include "CTRLGas/CTRLGasComponent.h"
+#include "CTRLGas/CTRLAbilitySystemComponent.h"
 
 #include "AbilitySystemGlobals.h"
 
@@ -8,17 +8,17 @@
 #include "CTRLGas/CTRLGasUtils.h"
 #include "CTRLGas/Abilities/CTRLGasAbility.h"
 
-int32 UCTRLGasComponent::GetLevelOrDefault(float const InLevel) const
+int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(float const InLevel) const
 {
 	return InLevel == -1.0f ? GetLevel() : FMath::Max(1, FMath::Floor(InLevel));
 }
 
-int32 UCTRLGasComponent::GetLevelOrDefault(int32 const InLevel) const
+int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(int32 const InLevel) const
 {
 	return InLevel == -1 ? GetLevel() : FMath::Max(1, InLevel);
 }
 
-UCTRLGasComponent* UCTRLGasComponent::Get(UObject const* SourceObject, bool const bWarnIfNotFound)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::Get(UObject const* SourceObject, bool const bWarnIfNotFound)
 {
 	auto* Actor = Cast<AActor>(SourceObject);
 	if (!Actor)
@@ -48,21 +48,21 @@ UCTRLGasComponent* UCTRLGasComponent::Get(UObject const* SourceObject, bool cons
 	return OurASC;
 }
 
-UCTRLGasComponent* UCTRLGasComponent::GetChecked(UObject const* SourceObject)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetChecked(UObject const* SourceObject)
 {
 	auto const ASC = Get(SourceObject);
 	check(IsValid(ASC));
 	return ASC;
 }
 
-UCTRLGasComponent* UCTRLGasComponent::GetEnsured(UObject const* SourceObject)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetEnsured(UObject const* SourceObject)
 {
 	auto const ASC = Get(SourceObject);
 	ensure(IsValid(ASC));
 	return ASC;
 }
 
-void UCTRLGasComponent::RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle>& Handles)
+void UCTRLAbilitySystemComponent::RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle>& Handles)
 {
 	if (!Handles.Num()) return;
 	auto CurrentHandles = Handles;
@@ -76,13 +76,13 @@ void UCTRLGasComponent::RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffe
 	}
 }
 
-void UCTRLGasComponent::OnTagUpdated(FGameplayTag const& Tag, bool const TagExists)
+void UCTRLAbilitySystemComponent::OnTagUpdated(FGameplayTag const& Tag, bool const TagExists)
 {
 	Super::OnTagUpdated(Tag, TagExists);
 	OnTagUpdatedDelegate.Broadcast(Tag, TagExists);
 }
 
-void UCTRLGasComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool const bReplicateCancelAbility)
+void UCTRLAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool const bReplicateCancelAbility)
 {
 	ABILITYLIST_SCOPE_LOCK();
 	for (auto const& AbilitySpec : ActivatableAbilities.Items)
@@ -136,7 +136,7 @@ void UCTRLGasComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCan
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
-void UCTRLGasComponent::CancelInputActivatedAbilities(bool const bReplicateCancelAbility)
+void UCTRLAbilitySystemComponent::CancelInputActivatedAbilities(bool const bReplicateCancelAbility)
 {
 	auto ShouldCancelFunc = [this](UCTRLGasAbility const* Ability, FGameplayAbilitySpecHandle Handle)
 	{
@@ -147,7 +147,7 @@ void UCTRLGasComponent::CancelInputActivatedAbilities(bool const bReplicateCance
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
 }
 
-void UCTRLGasComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
+void UCTRLAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
 {
 	Super::AbilitySpecInputPressed(Spec);
 
@@ -160,7 +160,7 @@ void UCTRLGasComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
 	}
 }
 
-void UCTRLGasComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
+void UCTRLAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
 {
 	Super::AbilitySpecInputReleased(Spec);
 
@@ -173,7 +173,7 @@ void UCTRLGasComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
 	}
 }
 
-void UCTRLGasComponent::OnAbilityInputTagPressed(FGameplayTag const& InputTag)
+void UCTRLAbilitySystemComponent::OnAbilityInputTagPressed(FGameplayTag const& InputTag)
 {
 	if (!InputTag.IsValid()) return;
 	for (auto const& AbilitySpec : ActivatableAbilities.Items)
@@ -186,7 +186,7 @@ void UCTRLGasComponent::OnAbilityInputTagPressed(FGameplayTag const& InputTag)
 	}
 }
 
-void UCTRLGasComponent::OnAbilityInputTagReleased(FGameplayTag const& InputTag)
+void UCTRLAbilitySystemComponent::OnAbilityInputTagReleased(FGameplayTag const& InputTag)
 {
 	if (!InputTag.IsValid()) return;
 	for (auto const& AbilitySpec : ActivatableAbilities.Items)
@@ -199,7 +199,7 @@ void UCTRLGasComponent::OnAbilityInputTagReleased(FGameplayTag const& InputTag)
 	}
 }
 
-void UCTRLGasComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
+void UCTRLAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
 	// if (HasMatchingGameplayTag(TAG_Gameplay_AbilityInputBlocked))
 	// {
@@ -286,7 +286,7 @@ void UCTRLGasComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 	InputReleasedSpecHandles.Reset();
 }
 
-void UCTRLGasComponent::ClearAbilityInput()
+void UCTRLAbilitySystemComponent::ClearAbilityInput()
 {
 	InputPressedSpecHandles.Reset();
 	InputReleasedSpecHandles.Reset();
@@ -294,7 +294,7 @@ void UCTRLGasComponent::ClearAbilityInput()
 		.Reset();
 }
 
-FGameplayEffectSpecHandle UCTRLGasComponent::MakeSpec(
+FGameplayEffectSpecHandle UCTRLAbilitySystemComponent::MakeSpec(
 	TSubclassOf<UGameplayEffect> GameplayEffectClass,
 	TOptional<float> Level,
 	TOptional<FGameplayEffectContextHandle> Context
@@ -307,7 +307,7 @@ FGameplayEffectSpecHandle UCTRLGasComponent::MakeSpec(
 	);
 }
 
-FActiveGameplayEffectHandle UCTRLGasComponent::ApplySpecToSelf(
+FActiveGameplayEffectHandle UCTRLAbilitySystemComponent::ApplySpecToSelf(
 	UObject const* InSourceObject,
 	TSubclassOf<UGameplayEffect> const EffectClass,
 	FCTRLGasEffectSpecFactoryFn const SpecFactory
@@ -329,7 +329,7 @@ FActiveGameplayEffectHandle UCTRLGasComponent::ApplySpecToSelf(
 }
 
 //~ Adapted from FActiveGameplayEffectsContainer::CanApplyAttributeModifiers
-bool UCTRLGasComponent::CanApplyAttributeModifiers(FGameplayEffectSpecHandle const& SpecHandle) const
+bool UCTRLAbilitySystemComponent::CanApplyAttributeModifiers(FGameplayEffectSpecHandle const& SpecHandle) const
 {
 	if (!SpecHandle.IsValid()) return false;
 	auto Spec = *SpecHandle.Data.Get();
@@ -356,7 +356,7 @@ bool UCTRLGasComponent::CanApplyAttributeModifiers(FGameplayEffectSpecHandle con
 	return true;
 }
 
-bool UCTRLGasComponent::CanApplyAttributeModifiers(TSubclassOf<UGameplayEffect> const& EffectClass, FCTRLGasEffectSpecFactoryFn const& SpecFactory) const
+bool UCTRLAbilitySystemComponent::CanApplyAttributeModifiers(TSubclassOf<UGameplayEffect> const& EffectClass, FCTRLGasEffectSpecFactoryFn const& SpecFactory) const
 {
 	auto SpecHandle = MakeSpec(EffectClass);
 	if (!SpecHandle.IsValid()) return false;

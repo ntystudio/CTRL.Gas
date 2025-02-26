@@ -4,7 +4,7 @@
 
 #include "Engine/World.h"
 
-#include "CTRLGas/CTRLGasComponent.h"
+#include "CTRLGas/CTRLAbilitySystemComponent.h"
 
 void UCTRLGasWaitInputPressRelease::OnPressCallback()
 {

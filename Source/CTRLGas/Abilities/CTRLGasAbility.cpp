@@ -9,7 +9,7 @@
 
 #include "CTRLGas/CTRLGasAbilitySourceInterface.h"
 #include "CTRLGas/CTRLGas.h"
-#include "CTRLGas/CTRLGasComponent.h"
+#include "CTRLGas/CTRLAbilitySystemComponent.h"
 #include "CTRLGas/CTRLGasEffectContext.h"
 #include "CTRLGas/CTRLGasPhysicalMaterialWithTags.h"
 
@@ -115,9 +115,9 @@ void UCTRLGasAbility::EndAbility(
 	}
 }
 
-UCTRLGasComponent* UCTRLGasAbility::GetASC() const
+UCTRLAbilitySystemComponent* UCTRLGasAbility::GetASC() const
 {
-	return Cast<UCTRLGasComponent>(GetAbilitySystemComponentFromActorInfo());
+	return Cast<UCTRLAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
 }
 
 UCTRLGasAbility::UCTRLGasAbility(FObjectInitializer const& ObjectInitializer): Super(ObjectInitializer)

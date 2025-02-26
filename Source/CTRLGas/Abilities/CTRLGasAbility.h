@@ -13,7 +13,7 @@
 #include "CTRLGasAbility.generated.h"
 
 class ICTRLGasAbilitySourceInterface;
-class UCTRLGasComponent;
+class UCTRLAbilitySystemComponent;
 /**
  * ELyraAbilityActivationPolicy
  *
@@ -61,7 +61,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UCTRLGasComponent* GetASC() const;
+	UCTRLAbilitySystemComponent* GetASC() const;
 
 	UFUNCTION(BlueprintCallable)
 	bool TryActivate(bool bAllowRemoteActivation = true);

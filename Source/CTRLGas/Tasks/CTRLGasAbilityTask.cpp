@@ -1,7 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2025 NTY.studio
 #include "CTRLGasAbilityTask.h"
 
-#include "CTRLGas/CTRLGasComponent.h"
+#include "CTRLGas/CTRLAbilitySystemComponent.h"
 
 void UCTRLGasAbilityTask::Activate()
 {
@@ -29,7 +29,7 @@ void UCTRLGasAbilityTask::OnDestroy(bool const bInOwnerFinished)
 	}
 }
 
-UCTRLGasComponent* UCTRLGasAbilityTask::GetASC() const
+UCTRLAbilitySystemComponent* UCTRLGasAbilityTask::GetASC() const
 {
-	return Cast<UCTRLGasComponent>(AbilitySystemComponent.Get());
+	return Cast<UCTRLAbilitySystemComponent>(AbilitySystemComponent.Get());
 }

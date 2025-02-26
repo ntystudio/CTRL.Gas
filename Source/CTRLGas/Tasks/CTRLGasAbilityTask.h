@@ -16,7 +16,7 @@
 	EndTask(); \
 }())
 
-class UCTRLGasComponent;
+class UCTRLAbilitySystemComponent;
 /**
  * 
  */
@@ -38,7 +38,7 @@ public:
 	FUGAbilityTaskDelegate OnError;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UCTRLGasComponent* GetASC() const;
+	UCTRLAbilitySystemComponent* GetASC() const;
 
 	virtual void Activate() override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;

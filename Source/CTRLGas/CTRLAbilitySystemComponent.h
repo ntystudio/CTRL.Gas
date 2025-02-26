@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "CTRLGasComponent.generated.h"
+#include "CTRLAbilitySystemComponent.generated.h"
 
 class UCTRLGasAbility;
 
 using FCTRLGasEffectSpecFactoryFn = TFunction<FGameplayEffectSpecHandle(FGameplayEffectSpecHandle)>;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class CTRLGAS_API UCTRLGasComponent : public UAbilitySystemComponent
+class CTRLGAS_API UCTRLAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
 
