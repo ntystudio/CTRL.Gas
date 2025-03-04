@@ -6,9 +6,9 @@
 
 #include "Abilities/GameplayAbility.h"
 
-#include "GameFramework/Character.h"
-
 #include "CTRLGas/CTRLGasAbilitySourceInterface.h"
+
+#include "GameFramework/Character.h"
 
 #include "CTRLGasAbility.generated.h"
 
@@ -105,6 +105,13 @@ public:
 	virtual void OnRemoveAbility(FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilitySpec const& Spec) override;
 	virtual void ApplyAbilityTagsToGameplayEffectSpec(FGameplayEffectSpec& Spec, FGameplayAbilitySpec* AbilitySpec) const override;
 	virtual FGameplayEffectContextHandle MakeEffectContext(FGameplayAbilitySpecHandle Handle, FGameplayAbilityActorInfo const* ActorInfo) const override;
+	// ReSharper disable once CppRedefinitionOfDefaultArgumentInOverrideFunction
+	virtual FGameplayEffectSpecHandle MakeOutgoingGameplayEffectSpec(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo const ActivationInfo, TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level = -1) const override;
+	// wrapper to use CTRLAbilitySystemComponent's CanApplyAttributeModifiers
+	virtual bool CheckCost(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+	virtual void ApplyCost(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo const ActivationInfo) const override;
+	bool CheckCooldown(FGameplayAbilitySpecHandle Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const;
+	void ApplyCooldown(FGameplayAbilitySpecHandle Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo ActivationInfo) const;
 
 public:
 	ELyraAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }

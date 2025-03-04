@@ -3,17 +3,21 @@
 #include "CTRLGasAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "AbilitySystemLog.h"
+
+#include "CTRLGas/CTRLAbilitySystemComponent.h"
+#include "CTRLGas/CTRLGas.h"
+#include "CTRLGas/CTRLGasAbilitySourceInterface.h"
+#include "CTRLGas/CTRLGasEffectContext.h"
+#include "CTRLGas/CTRLGasPhysicalMaterialWithTags.h"
 
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 
-#include "CTRLGas/CTRLGasAbilitySourceInterface.h"
-#include "CTRLGas/CTRLGas.h"
-#include "CTRLGas/CTRLAbilitySystemComponent.h"
-#include "CTRLGas/CTRLGasEffectContext.h"
-#include "CTRLGas/CTRLGasPhysicalMaterialWithTags.h"
-
 #include UE_INLINE_GENERATED_CPP_BY_NAME(CTRLGasAbility)
+
+static auto const CVarAbilitySystemShowMakeOutgoingGameplayEffectSpecs = IConsoleManager::Get().FindConsoleVariable(TEXT("AbilitySystem.ShowClientMakeOutgoingSpecs"));
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 bool UCTRLGasAbility::TryActivate(bool const bAllowRemoteActivation)
@@ -69,7 +73,7 @@ void UCTRLGasAbility::ActivateAbility(
 	for (auto const EffectClass : OnActivateEffects)
 	{
 		if (!EffectClass || !IsValid(EffectClass)) { continue; }
-		auto const Spec = MakeOutgoingGameplayEffectSpec(EffectClass, GetAbilityLevel(Handle, ActorInfo));
+		auto const Spec = Super::MakeOutgoingGameplayEffectSpec(EffectClass, GetAbilityLevel(Handle, ActorInfo));
 		auto EffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, Spec);
 		if (EffectHandle.IsValid())
 		{
@@ -89,7 +93,7 @@ bool UCTRLGasAbility::CommitAbility(
 	for (auto const EffectClass : CommitEffects)
 	{
 		if (!EffectClass || !IsValid(EffectClass)) { continue; }
-		auto const Spec = MakeOutgoingGameplayEffectSpec(EffectClass, GetAbilityLevel(Handle, ActorInfo));
+		auto const Spec = Super::MakeOutgoingGameplayEffectSpec(EffectClass, GetAbilityLevel(Handle, ActorInfo));
 		if (!Spec.IsValid()) continue;
 		auto EffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, Spec);
 		if (!EffectHandle.IsValid()) continue;
@@ -266,4 +270,96 @@ FGameplayEffectContextHandle UCTRLGasAbility::MakeEffectContext(FGameplayAbility
 	EffectContext->AddSourceObject(SourceObject);
 
 	return ContextHandle;
+}
+
+FGameplayEffectSpecHandle UCTRLGasAbility::MakeOutgoingGameplayEffectSpec(
+	FGameplayAbilitySpecHandle const Handle,
+	FGameplayAbilityActorInfo const* ActorInfo,
+	FGameplayAbilityActivationInfo const ActivationInfo,
+	TSubclassOf<UGameplayEffect> const GameplayEffectClass,
+	float Level
+) const
+{
+	Level = Level == -1 ? GetAbilityLevel() : Level;
+	if (!ensure(ActorInfo))
+	{
+		return FGameplayEffectSpecHandle{};
+	}
+
+	if (auto const ASC = Cast<UCTRLAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get()))
+	{
+	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+		if (CVarAbilitySystemShowMakeOutgoingGameplayEffectSpecs->GetBool() && HasAuthority(&ActivationInfo) == false)
+		{
+			ABILITY_LOG(Warning, TEXT("%s, MakeOutgoingGameplayEffectSpec: %s"), *ASC->GetFullName(),  *GameplayEffectClass->GetName()); 
+		}
+	#endif
+
+		FGameplayEffectSpecHandle NewHandle = ASC->MakeEffectSpec(GameplayEffectClass, Level, MakeEffectContext(Handle, ActorInfo));
+		if (!NewHandle.IsValid()) return NewHandle;
+		auto* AbilitySpec = ASC->FindAbilitySpecFromHandle(Handle);
+		ApplyAbilityTagsToGameplayEffectSpec(*NewHandle.Data.Get(), AbilitySpec);
+
+		// Copy over set by caller magnitudes
+		if (AbilitySpec)
+		{
+			NewHandle.Data->SetByCallerTagMagnitudes = AbilitySpec->SetByCallerTagMagnitudes;
+		}
+		return NewHandle;
+	}
+	
+	return Super::MakeOutgoingGameplayEffectSpec(Handle, ActorInfo, ActivationInfo, GameplayEffectClass, Level);
+}
+
+bool UCTRLGasAbility::CheckCost(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (!CostGameplayEffectClass) { return true; }
+	if (auto const ASC = Cast<UCTRLAbilitySystemComponent>(ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr))
+	{
+		auto const EffectSpec = ASC->MakeEffectSpec(CostGameplayEffectClass, GetAbilityLevel(), MakeEffectContext(Handle, ActorInfo));
+		if (!EffectSpec.IsValid()) { return false; }
+		if (!ASC->CanApplyAttributeModifiers(EffectSpec))
+		{
+			FGameplayTag const& CostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
+			if (OptionalRelevantTags && CostTag.IsValid())
+			{
+				OptionalRelevantTags->AddTag(CostTag);
+			}
+			return false;
+		}
+		return true;
+	}
+
+	return Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
+}
+
+void UCTRLGasAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	if (auto const ASC = Cast<UCTRLAbilitySystemComponent>(ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr))
+	{
+		auto const EffectSpec = ASC->MakeEffectSpec(CostGameplayEffectClass, GetAbilityLevel(), MakeEffectContext(Handle, ActorInfo));
+		if (!EffectSpec.IsValid()) { return; }
+		// ReSharper disable once CppExpressionWithoutSideEffects
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpec);
+		return;
+	}
+	Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
+}
+
+bool UCTRLGasAbility::CheckCooldown(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
+}
+
+
+void UCTRLGasAbility::ApplyCooldown(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo const ActivationInfo) const
+{
+	if (auto const ASC = Cast<UCTRLAbilitySystemComponent>(ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr))
+	{
+		auto const EffectSpec = ASC->MakeEffectSpec(CooldownGameplayEffectClass, GetAbilityLevel(), MakeEffectContext(Handle, ActorInfo));
+		// ReSharper disable once CppExpressionWithoutSideEffects
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpec);
+		return;
+	}
+	Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
 }

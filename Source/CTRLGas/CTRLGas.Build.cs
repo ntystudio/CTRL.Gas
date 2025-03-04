@@ -22,12 +22,14 @@ public class CTRLGas : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new[]
 			{
+				"CTRLCore",
 				"CoreUObject",
 				"Engine",
 				"GameplayTags",
 				"PhysicsCore",
 				"Slate",
 				"SlateCore",
+				"WorldConditions"
 			}
 		);
 

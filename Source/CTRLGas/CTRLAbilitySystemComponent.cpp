@@ -18,6 +18,24 @@ int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(int32 const InLevel) const
 	return InLevel == -1 ? GetLevel() : FMath::Max(1, InLevel);
 }
 
+int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(TOptional<int32> InLevel) const
+{
+	if (InLevel.IsSet())
+	{
+		return GetLevelOrDefault(InLevel.GetValue());
+	}
+	return GetLevel();
+}
+
+int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(TOptional<float> InLevel) const
+{
+	if (InLevel.IsSet())
+	{
+		return GetLevelOrDefault(InLevel.GetValue());
+	}
+	return GetLevel();
+}
+
 UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::Get(UObject const* SourceObject, bool const bWarnIfNotFound)
 {
 	auto* Actor = Cast<AActor>(SourceObject);
@@ -295,16 +313,30 @@ void UCTRLAbilitySystemComponent::ClearAbilityInput()
 }
 
 FGameplayEffectSpecHandle UCTRLAbilitySystemComponent::MakeSpec(
-	TSubclassOf<UGameplayEffect> GameplayEffectClass,
+	TSubclassOf<UGameplayEffect> const& GameplayEffectClass,
+	TOptional<float> const& Level,
+	TOptional<FGameplayEffectContextHandle> const& Context
+) const
+{
+	return MakeEffectSpec(GameplayEffectClass, Level, Context);
+}
+
+FGameplayEffectSpecHandle UCTRLAbilitySystemComponent::MakeEffectSpec(
+	TSubclassOf<UGameplayEffect> const& GameplayEffectClass,
 	TOptional<float> Level,
 	TOptional<FGameplayEffectContextHandle> Context
 ) const
 {
 	return MakeOutgoingSpec(
 		GameplayEffectClass,
-		Level.IsSet() ? Level.GetValue() : GetLevel(),
+		GetLevelOrDefault(Level),
 		Context.IsSet() ? Context.GetValue() : MakeEffectContext()
 	);
+}
+
+FGameplayAbilitySpec UCTRLAbilitySystemComponent::MakeAbilitySpec(TSubclassOf<UGameplayAbility> const& GameplayAbilityClass, TOptional<float> const& Level, UObject* Source) const
+{
+	return FGameplayAbilitySpec(GameplayAbilityClass, GetLevelOrDefault(Level), INDEX_NONE, Source);
 }
 
 FActiveGameplayEffectHandle UCTRLAbilitySystemComponent::ApplySpecToSelf(
@@ -328,7 +360,7 @@ FActiveGameplayEffectHandle UCTRLAbilitySystemComponent::ApplySpecToSelf(
 	return ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 }
 
-//~ Adapted from FActiveGameplayEffectsContainer::CanApplyAttributeModifiers
+//~ Adapted from FActiveGameplayEffectsContainer::CanApplyAttributeModifiers to work on a spec handle directly
 bool UCTRLAbilitySystemComponent::CanApplyAttributeModifiers(FGameplayEffectSpecHandle const& SpecHandle) const
 {
 	if (!SpecHandle.IsValid()) return false;
@@ -358,7 +390,7 @@ bool UCTRLAbilitySystemComponent::CanApplyAttributeModifiers(FGameplayEffectSpec
 
 bool UCTRLAbilitySystemComponent::CanApplyAttributeModifiers(TSubclassOf<UGameplayEffect> const& EffectClass, FCTRLGasEffectSpecFactoryFn const& SpecFactory) const
 {
-	auto SpecHandle = MakeSpec(EffectClass);
+	auto SpecHandle = MakeEffectSpec(EffectClass);
 	if (!SpecHandle.IsValid()) return false;
 	if (SpecFactory)
 	{

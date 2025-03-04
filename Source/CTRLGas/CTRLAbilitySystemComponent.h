@@ -30,15 +30,18 @@ public:
 	UPROPERTY(BlueprintAssignable, DisplayName = "On Tag Updated")
 	FOnTagUpdated OnTagUpdatedDelegate;
 
-	FGameplayEffectSpecHandle MakeSpec(TSubclassOf<UGameplayEffect> GameplayEffectClass, TOptional<float> Level = {}, TOptional<FGameplayEffectContextHandle> Context = {}) const;
+	UE_DEPRECATED(5.5, "Use MakeEffectSpec instead")
+	FGameplayEffectSpecHandle MakeSpec(TSubclassOf<UGameplayEffect> const& GameplayEffectClass, TOptional<float> const& Level = {}, TOptional<FGameplayEffectContextHandle> const& Context = {}) const;
+	FGameplayEffectSpecHandle MakeEffectSpec(TSubclassOf<UGameplayEffect> const& GameplayEffectClass, TOptional<float> Level = {}, TOptional<FGameplayEffectContextHandle> Context = {}) const;
+	FGameplayAbilitySpec MakeAbilitySpec(TSubclassOf<UGameplayAbility> const& GameplayAbilityClass, TOptional<float> const& Level = {}, UObject* Source = nullptr) const;
 	// ApplyGameplayEffectSpecToSelf with a factory function to modify the spec before applying.
 	FActiveGameplayEffectHandle ApplySpecToSelf(UObject const* InSourceObject, TSubclassOf<UGameplayEffect> EffectClass, FCTRLGasEffectSpecFactoryFn SpecFactory = nullptr);
 
 	// e.g. for checking cost before applying
 	// Adapted from FActiveGameplayEffectsContainer::CanApplyAttributeModifiers, but takes a spec handle
 	// instead of gameplay effect subclass.
-	// This allows our cost effect to use the same logic as the actual effect, in particular
-	// it enables setting a different source object for the cost effect, but it also allows
+	// This allows our effect to use the same logic as the actual effect, in particular
+	// it enables setting a different source object for the effect, but also allows
 	// other customizations like custom context or level so it can exactly match the setup
 	// when we apply the effect.
 	// Stock CanApplyAttributeModifiers/CheckCost only supports source == target.
@@ -56,6 +59,8 @@ public:
 	virtual int32 GetLevel() const { return DefaultLevel; }
 	virtual int32 GetLevelOrDefault(float InLevel) const;
 	virtual int32 GetLevelOrDefault(int32 InLevel) const;
+	virtual int32 GetLevelOrDefault(TOptional<int32> InLevel) const;
+	virtual int32 GetLevelOrDefault(TOptional<float> InLevel) const;
 	virtual void OnTagUpdated(FGameplayTag const& Tag, bool TagExists) override;
 
 	//~ Ability Input Handling ~//

@@ -13,7 +13,6 @@
 
 FHitResult ACTRLGas_GroundTraceFromCamera::PerformTrace(AActor* InSourceActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACTRLGas_GroundTraceFromCamera::PerformTrace %s"), *LexToString(bLastTraceWasGood));
 	constexpr bool bTraceComplex = false;
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(ACTRLGas_GroundTraceFromCamera), bTraceComplex);
@@ -61,7 +60,6 @@ FHitResult ACTRLGas_GroundTraceFromCamera::PerformTrace(AActor* InSourceActor)
 	//if (!ReturnHitResult.bBlockingHit) then our endpoint may be off the map. Hopefully this is only possible in debug maps.
 
 	bLastTraceWasGood = true; //So far, we're good. If we need a ground spot and can't find one, we'll come back.
-	UE_LOG(LogTemp, Warning, TEXT("ACTRLGas_GroundTraceFromCamera::PerformTrace %s"), *LexToString(bLastTraceWasGood));
 
 	//Use collision shape to find a valid ground spot, if appropriate
 	if (CollisionShape.ShapeType != ECollisionShape::Line)
@@ -71,7 +69,6 @@ FHitResult ACTRLGas_GroundTraceFromCamera::PerformTrace(AActor* InSourceActor)
 		TraceEnd = ReturnHitResult.Location;
 		TraceStart.Z += CollisionHeightOffset;
 		bLastTraceWasGood = AdjustCollisionResultForShape(TraceStart, TraceEnd, Params, ReturnHitResult);
-		UE_LOG(LogTemp, Warning, TEXT("ACTRLGas_GroundTraceFromCamera::AdjustCollisionResultForShape %s"), *LexToString(bLastTraceWasGood));
 		if (bLastTraceWasGood)
 		{
 			ReturnHitResult.Location.Z -= CollisionHeightOffset; //Undo the artificial height adjustment

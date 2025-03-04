@@ -28,6 +28,14 @@
 		{
 			"Name": "Iris",
 			"Enabled": true
+		},
+		{
+			"Name": "WorldConditions",
+			"Enabled": true
+		},
+		{
+			"Name": "CTRLCore",
+			"Enabled": true
 		}
 	]
 }

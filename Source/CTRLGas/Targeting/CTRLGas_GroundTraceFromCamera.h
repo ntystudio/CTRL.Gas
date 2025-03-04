@@ -13,15 +13,13 @@ class CTRLGAS_API ACTRLGas_GroundTraceFromCamera : public AGameplayAbilityTarget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual FHitResult PerformTrace(AActor* InSourceActor) override;
-
 public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual bool ShouldProduceTargetData() const override;
 
 protected:
-	virtual bool IsConfirmTargetingAllowed() override;
-
 	bool bHasTicked = false; // Allow IsConfirmTargetingAllowed to be true before first tick to support instant confirm with ground trace.
+
+	virtual bool IsConfirmTargetingAllowed() override;
+	virtual FHitResult PerformTrace(AActor* InSourceActor) override;
 };
