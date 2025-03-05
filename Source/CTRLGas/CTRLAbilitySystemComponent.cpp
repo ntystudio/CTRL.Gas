@@ -1,4 +1,5 @@
-﻿// SPDX-FileCopyrightText: 2025 NTY.studio
+﻿// SPDX-FileCopyrightText: © 2025 NTY.studio
+// SPDX-License-Identifier: MIT
 
 #include "CTRLGas/CTRLAbilitySystemComponent.h"
 

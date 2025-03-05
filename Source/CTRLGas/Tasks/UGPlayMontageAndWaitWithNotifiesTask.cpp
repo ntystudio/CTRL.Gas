@@ -1,7 +1,9 @@
-﻿// // SPDX-FileCopyrightText: 2025 NTY.studio
+﻿// SPDX-FileCopyrightText: © 2025 NTY.studio
+// SPDX-License-Identifier: MIT
 //
 // #include "CTRLGas/Tasks/UGPlayMontageAndWaitWithNotifiesTask.h"
-// // SPDX-FileCopyrightText: 2025 NTY.studio
+// SPDX-FileCopyrightText: © 2025 NTY.studio
+// SPDX-License-Identifier: MIT
 //
 // #include "AbilitySystemComponent.h"
 // #include "AbilitySystemGlobals.h"

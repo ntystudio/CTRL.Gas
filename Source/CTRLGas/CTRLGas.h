@@ -1,4 +1,5 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// SPDX-FileCopyrightText: © 2025 NTY.studio
+// SPDX-License-Identifier: MIT
 
 #pragma once
 
