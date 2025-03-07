@@ -88,7 +88,7 @@ FHitResult ACTRLGas_GroundTraceFromCamera::PerformTrace(AActor* InSourceActor)
 	return ReturnHitResult;
 }
 
-void ACTRLGas_GroundTraceFromCamera::Tick(float DeltaSeconds)
+void ACTRLGas_GroundTraceFromCamera::Tick(float const DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!bHasTicked)
