@@ -47,7 +47,7 @@ int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(TOptional<float> InLevel) c
 	return GetLevel();
 }
 
-UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::Get(UObject const* SourceObject, bool const bWarnIfNotFound)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASC(UObject const* SourceObject, bool const bWarnIfNotFound)
 {
 	auto* Actor = Cast<AActor>(SourceObject);
 	if (!Actor)
@@ -77,16 +77,16 @@ UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::Get(UObject const* Sou
 	return OurASC;
 }
 
-UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetChecked(UObject const* SourceObject)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASCChecked(UObject const* SourceObject)
 {
-	auto const ASC = Get(SourceObject);
+	auto const ASC = GetASC(SourceObject);
 	check(IsValid(ASC));
 	return ASC;
 }
 
-UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetEnsured(UObject const* SourceObject)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASCEnsured(UObject const* SourceObject)
 {
-	auto const ASC = Get(SourceObject);
+	auto const ASC = GetASC(SourceObject);
 	ensure(IsValid(ASC));
 	return ASC;
 }

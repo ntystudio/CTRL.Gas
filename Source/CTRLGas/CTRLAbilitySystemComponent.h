@@ -19,11 +19,11 @@ class CTRLGAS_API UCTRLAbilitySystemComponent : public UAbilitySystemComponent
 public:
 	// Find the AbilitySystemComponent on an Actor, ActorComponent, or UObject (via TypedOuter).
 	UFUNCTION(DisplayName = "Get CTRL ASC [CTRL]", Category="CTRL|Gas", meta=(Keywords="Gameplay Ability System Component"))
-	static UCTRLAbilitySystemComponent* Get(UObject const* SourceObject, bool bWarnIfNotFound = true);
+	static UCTRLAbilitySystemComponent* GetASC(UObject const* SourceObject, bool bWarnIfNotFound = true);
 	UFUNCTION(DisplayName = "Get CTRL ASC Checked [CTRL]", Category="CTRL|Gas", meta=(Keywords="Gameplay Ability System Component"))
-	static UCTRLAbilitySystemComponent* GetChecked(UObject const* SourceObject);
+	static UCTRLAbilitySystemComponent* GetASCChecked(UObject const* SourceObject);
 	UFUNCTION(DisplayName = "Get CTRL ASC Ensured [CTRL]", Category="CTRL|Gas", meta=(Keywords="Gameplay Ability System Component"))
-	static UCTRLAbilitySystemComponent* GetEnsured(UObject const* SourceObject);
+	static UCTRLAbilitySystemComponent* GetASCEnsured(UObject const* SourceObject);
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	int32 DefaultLevel = 1; // Default level for the character, must >= 1
