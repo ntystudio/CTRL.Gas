@@ -40,7 +40,7 @@ void UCTRLGasAbility::TryActivateAbilityOnSpawn(FGameplayAbilityActorInfo const*
 	bool const bIsPredicting = (GetCurrentActivationInfo().ActivationMode == EGameplayAbilityActivationMode::Predicting);
 
 	// Try to activate if activation policy is on spawn.
-	if (ActorInfo && !Spec.IsActive() && !bIsPredicting && (ActivationPolicy == ELyraAbilityActivationPolicy::OnSpawn))
+	if (ActorInfo && !Spec.IsActive() && !bIsPredicting && (ActivationPolicy == ECTRLAbilityActivationPolicy::OnSpawn))
 	{
 		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
 		AActor const* AvatarActor = ActorInfo->AvatarActor.Get();
@@ -162,27 +162,28 @@ FGameplayAbilityTargetingLocationInfo UCTRLGasAbility::MakeTargetingLocationInfo
 	return Info;
 }
 
-AController* UCTRLGasAbility::GetControllerFromActorInfo() const
+template <typename T>
+T* UCTRLGasAbility::GetControllerFromActorInfo() const
 {
 	if (CurrentActorInfo)
 	{
 		if (auto* PC = CurrentActorInfo->PlayerController.Get())
 		{
-			return PC;
+			return Cast<T>(PC);
 		}
 
 		// Look for a player controller or pawn in the owner chain.
 		auto* TestActor = CurrentActorInfo->OwnerActor.Get();
 		while (TestActor)
 		{
-			if (auto* C = Cast<AController>(TestActor))
+			if (auto* C = Cast<T>(TestActor))
 			{
 				return C;
 			}
 
 			if (auto const* Pawn = Cast<APawn>(TestActor))
 			{
-				return Pawn->GetController();
+				return Pawn->GetController<T>();
 			}
 
 			TestActor = TestActor->GetOwner();
@@ -192,9 +193,34 @@ AController* UCTRLGasAbility::GetControllerFromActorInfo() const
 	return nullptr;
 }
 
-ACharacter* UCTRLGasAbility::GetCharacterFromActorInfo() const
+AController* UCTRLGasAbility::K2_GetControllerFromActorInfo(TSubclassOf<AController> const ControllerClass) const
 {
-	return (CurrentActorInfo ? Cast<ACharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
+	if (auto const Controller = GetControllerFromActorInfo())
+	{
+		if (Controller->IsA(ControllerClass))
+		{
+			return Controller;
+		}
+	}
+	return nullptr;
+}
+
+ACharacter* UCTRLGasAbility::K2_GetCharacterFromActorInfo(TSubclassOf<AController> const CharacterClass) const
+{
+	if (auto const Character = GetCharacterFromActorInfo<ACharacter>())
+	{
+		if (Character->IsA(CharacterClass))
+		{
+			return Character;
+		}
+	}
+	return nullptr;
+}
+
+template <typename T>
+T* UCTRLGasAbility::GetCharacterFromActorInfo() const
+{
+	return (CurrentActorInfo ? Cast<T>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
 }
 
 void UCTRLGasAbility::ApplyAbilityTagsToGameplayEffectSpec(FGameplayEffectSpec& Spec, FGameplayAbilitySpec* AbilitySpec) const

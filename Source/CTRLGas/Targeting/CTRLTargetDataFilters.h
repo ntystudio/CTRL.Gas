@@ -18,7 +18,7 @@
 /**
  * Filter that checks if an actor implements a specific interface.
  */
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, DisplayName="Filter By Interface [CTRL]", Category="CTRL|Gas|Targeting")
 struct CTRLGAS_API FCTRLTargetDataFilterByInterface : public FGameplayTargetDataFilter
 {
 	GENERATED_BODY()
@@ -38,7 +38,7 @@ public:
 	}
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, DisplayName="Filter By Gameplay Tags [CTRL]", Category="CTRL|Gas|Targeting")
 struct CTRLGAS_API FCTRLTargetDataFilterByGameplayTags : public FGameplayTargetDataFilter
 {
 	GENERATED_BODY()
@@ -58,9 +58,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true, EditCondition="!bUseQuery"), Category = Filter)
 	bool bMatchAny = false;
 
-    UPROPERTY(EditAnywhere, Category = "Equipment")
-	FWorldConditionQueryDefinition Condition;
-	
 	virtual bool FilterPassesForActor(AActor const* ActorToBeFiltered) const override
 	{
 		if (!Super::FilterPassesForActor(ActorToBeFiltered)) return false;
@@ -83,14 +80,15 @@ public:
 	}
 };
 
-UCLASS()
+UCLASS(DisplayName="Target Data Filter Utils [CTRL]", Category="CTRL|Gas|Targeting")
 class CTRLGAS_API UCTRLTargetDataFilterUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
 public:
-	UFUNCTION(BlueprintPure, Category = "Filter", DisplayName="Make Filter By Interface Handle [CTRL]")
+	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make Filter By Interface Handle [CTRL]")
 	static FGameplayTargetDataFilterHandle MakeFilterByInterfaceHandle(FCTRLTargetDataFilterByInterface Filter, AActor* FilterActor);
-	
-	UFUNCTION(BlueprintPure, Category = "Filter", DisplayName="Make Filter By GameplayTags Handle [CTRL]")
+
+	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make Filter By GameplayTags Handle [CTRL]")
 	static FGameplayTargetDataFilterHandle MakeFilterByGameplayTagsHandle(FCTRLTargetDataFilterByGameplayTags Filter, AActor* FilterActor);
 };

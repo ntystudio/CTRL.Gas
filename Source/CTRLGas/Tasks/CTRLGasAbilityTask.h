@@ -21,7 +21,7 @@ class UCTRLAbilitySystemComponent;
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable, BlueprintType, DisplayName="Ability Task [CTRLGas]")
+UCLASS(Abstract, Blueprintable, BlueprintType, DisplayName="Ability Task [CTRL]", Category="CTRL|Gas|Tasks")
 class CTRLGAS_API UCTRLGasAbilityTask : public UAbilityTask
 {
 	GENERATED_BODY()
@@ -29,16 +29,20 @@ class CTRLGAS_API UCTRLGasAbilityTask : public UAbilityTask
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUGAbilityTaskDelegate);
 
+	// Triggered when the task is activated.
 	UPROPERTY(BlueprintAssignable)
 	FUGAbilityTaskDelegate OnActivated;
 
+	// Triggered when the task is completed, successfully or not.
 	UPROPERTY(BlueprintAssignable)
 	FUGAbilityTaskDelegate OnCompleted;
 
+	// Triggered when the task fails.
 	UPROPERTY(BlueprintAssignable)
 	FUGAbilityTaskDelegate OnError;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	// Get the CTRL Gameplay Ability System Component from the Ability's owner actor.
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(Keywords="Gameplay Ability System Component"))
 	UCTRLAbilitySystemComponent* GetASC() const;
 
 	virtual void Activate() override;

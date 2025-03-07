@@ -14,14 +14,14 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(DisplayName="Wait Input Press Release [CTRL]", Category="CTRL|Gas|Tasks")
 class CTRLGAS_API UCTRLGasWaitInputPressRelease : public UCTRLGasAbilityTask
 {
 	GENERATED_BODY()
 
 public:
 	/** Wait until the user presses the input button for this ability's activation. Returns time this node spent waiting for the press. Will return 0 if input was already down. */
-	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+	UFUNCTION(BlueprintCallable, DisplayName="Wait Input Press Release [CTRL]", Category = "CTRL|Gas|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 	static UCTRLGasWaitInputPressRelease* WaitInputPressRelease(UGameplayAbility* OwningAbility, bool bInTestAlreadyPressed = true, bool bInTestAlreadyReleased = false, bool bInEndOnPressed = true, bool bInEndOnReleased = true);
 
 	UPROPERTY(BlueprintAssignable)

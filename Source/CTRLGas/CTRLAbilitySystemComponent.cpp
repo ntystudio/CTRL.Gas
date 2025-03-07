@@ -9,6 +9,16 @@
 #include "CTRLGas/CTRLGasUtils.h"
 #include "CTRLGas/Abilities/CTRLGasAbility.h"
 
+int32 UCTRLAbilitySystemComponent::K2_GetLevel() const
+{
+	return GetLevel();
+}
+
+int32 UCTRLAbilitySystemComponent::K2_GetLevelOrDefault(float const InLevel) const
+{
+	return GetLevelOrDefault(InLevel);
+}
+
 int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(float const InLevel) const
 {
 	return InLevel == -1.0f ? GetLevel() : FMath::Max(1, FMath::Floor(InLevel));
@@ -160,7 +170,7 @@ void UCTRLAbilitySystemComponent::CancelInputActivatedAbilities(bool const bRepl
 	auto ShouldCancelFunc = [this](UCTRLGasAbility const* Ability, FGameplayAbilitySpecHandle Handle)
 	{
 		auto const ActivationPolicy = Ability->GetActivationPolicy();
-		return ActivationPolicy == ELyraAbilityActivationPolicy::OnInputTriggered || ActivationPolicy == ELyraAbilityActivationPolicy::WhileInputActive;
+		return ActivationPolicy == ECTRLAbilityActivationPolicy::OnInputTriggered || ActivationPolicy == ECTRLAbilityActivationPolicy::WhileInputActive;
 	};
 
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
@@ -239,7 +249,7 @@ void UCTRLAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 			if (AbilitySpec->Ability && !AbilitySpec->IsActive())
 			{
 				auto const* AbilityCDO = Cast<UCTRLGasAbility>(AbilitySpec->Ability);
-				if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ELyraAbilityActivationPolicy::WhileInputActive)
+				if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ECTRLAbilityActivationPolicy::WhileInputActive)
 				{
 					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 				}
@@ -265,7 +275,7 @@ void UCTRLAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 				{
 					auto const* AbilityCDO = Cast<UCTRLGasAbility>(AbilitySpec->Ability);
 
-					if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ELyraAbilityActivationPolicy::OnInputTriggered)
+					if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ECTRLAbilityActivationPolicy::OnInputTriggered)
 					{
 						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 					}

@@ -11,19 +11,21 @@ class UCTRLGasAbility;
 
 using FCTRLGasEffectSpecFactoryFn = TFunction<FGameplayEffectSpecHandle(FGameplayEffectSpecHandle)>;
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), DisplayName="Ability System Component [CTRL]", Category="CTRL|Gas")
 class CTRLGAS_API UCTRLAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Find the AbilitySystemComponent on an Actor, ActorComponent, or UObject (via TypedOuter).
-	static ThisClass* Get(UObject const* SourceObject, bool bWarnIfNotFound = true);
-	static ThisClass* GetChecked(UObject const* SourceObject);
-	static ThisClass* GetEnsured(UObject const* SourceObject);
+	UFUNCTION(DisplayName = "Get CTRL ASC [CTRL]", Category="CTRL|Gas", meta=(Keywords="Gameplay Ability System Component"))
+	static UCTRLAbilitySystemComponent* Get(UObject const* SourceObject, bool bWarnIfNotFound = true);
+	UFUNCTION(DisplayName = "Get CTRL ASC Checked [CTRL]", Category="CTRL|Gas", meta=(Keywords="Gameplay Ability System Component"))
+	static UCTRLAbilitySystemComponent* GetChecked(UObject const* SourceObject);
+	UFUNCTION(DisplayName = "Get CTRL ASC Ensured [CTRL]", Category="CTRL|Gas", meta=(Keywords="Gameplay Ability System Component"))
+	static UCTRLAbilitySystemComponent* GetEnsured(UObject const* SourceObject);
 
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	int32 DefaultLevel = 1; // Default level for the character, must >= 1
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTagUpdated, const FGameplayTag&, Tag, bool, TagExists);
@@ -46,6 +48,7 @@ public:
 	// other customizations like custom context or level so it can exactly match the setup
 	// when we apply the effect.
 	// Stock CanApplyAttributeModifiers/CheckCost only supports source == target.
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="CTRL|Gas", meta=(Keywords="Gameplay Effect"), DisplayName="Can Apply Attribute Modifiers [CTRL]")
 	bool CanApplyAttributeModifiers(FGameplayEffectSpecHandle const& SpecHandle) const;
 
 	// Closer to FActiveGameplayEffectsContainer::CanApplyAttributeModifiers but takes a
@@ -54,10 +57,18 @@ public:
 
 	// Remove all active effects with the given handles.
 	// Resets the passed-in array.
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="CTRL|Gas")
 	void RemoveActiveEffectsForHandles(TArray<FActiveGameplayEffectHandle>& Handles);
 
 	virtual int32 GetLevel() const { return DefaultLevel; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="CTRL|Gas", DisplayName="Get ASC Level [CTRL]", meta=(Keywords="Effect Spec Ability"))
+	int32 K2_GetLevel() const;
+
+	// Return the level or DefaultLevel if InLevel is -1.
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="CTRL|Gas", DisplayName="Get Level or Default [CTRL]", meta=(Keywords="Effect Spec Ability"))
+	int32 K2_GetLevelOrDefault(float InLevel = -1) const;
+
 	virtual int32 GetLevelOrDefault(float InLevel) const;
 	virtual int32 GetLevelOrDefault(int32 InLevel) const;
 	virtual int32 GetLevelOrDefault(TOptional<int32> InLevel) const;

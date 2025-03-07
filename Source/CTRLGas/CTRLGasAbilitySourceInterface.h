@@ -12,7 +12,7 @@ class UPhysicalMaterial;
 struct FGameplayTagContainer;
 
 /** Base interface for anything acting as an ability calculation source */
-UINTERFACE()
+UINTERFACE(DisplayName="Ability Source Interface [CTRL]", Category="CTRL|Gas")
 class UCTRLGasAbilitySourceInterface : public UInterface
 {
 	GENERATED_BODY()

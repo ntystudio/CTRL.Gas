@@ -12,7 +12,7 @@ class FArchive;
 class UObject;
 class UPhysicalMaterial;
 
-USTRUCT()
+USTRUCT(DisplayName="Gas Effect Context [CTRL]", BlueprintType, Category="CTRL|Gas")
 struct CTRLGAS_API FCTRLGasEffectContext : public FGameplayEffectContext
 {
 	GENERATED_BODY()

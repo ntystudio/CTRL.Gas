@@ -21,7 +21,7 @@ struct FGameplayAbilityTargetDataHandle;
 /**
  * 
  */
-UCLASS()
+UCLASS(DisplayName="Targeting Utils [CTRL]", Category="CTRL|Gas|Targeting")
 class CTRLGAS_API UCTRLTargetingUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
@@ -29,8 +29,8 @@ class CTRLGAS_API UCTRLTargetingUtils : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(
 		BlueprintCallable,
-		Category = "Targeting",
 		DisplayName = "Get Actor From Target Data [CTRL]",
+		Category="CTRL|Gas|Targeting",
 		meta = (
 			ActorClass = "/Script/Engine.Actor",
 			DeterminesOutputType = "ActorClass",

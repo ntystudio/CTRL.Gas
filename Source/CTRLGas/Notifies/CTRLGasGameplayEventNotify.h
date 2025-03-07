@@ -14,7 +14,7 @@
 /**
  * Emit a GameplayEvent when this notify is triggered.
  */
-UCLASS(Blueprintable, BlueprintType, AutoExpandCategories=("Event"), meta=(DisplayName="Gameplay Event Notify [CTRLGas]"))
+UCLASS(Blueprintable, BlueprintType, AutoExpandCategories=("Event"), DisplayName="Gameplay Event Notify [CTRL]", Category="CTRL|Gas|Notifies")
 class CTRLGAS_API UCTRLGasGameplayEventNotify : public UAnimNotify
 {
 	GENERATED_BODY()

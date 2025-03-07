@@ -4,20 +4,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
+
 #include "CTRLWaitTaskEnd.generated.h"
 
 /**
  * 
  */
-UCLASS()
+UCLASS(DisplayName="Wait for Task End [CTRL]", Category="CTRL|Gas|Tasks")
 class CTRLGAS_API UCTRLWaitTaskEnd : public UAbilityTask
 {
 	GENERATED_BODY()
 
 public:
 	UCTRLWaitTaskEnd();
-	UFUNCTION(BlueprintCallable, meta=(HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true", HideSpawnParms="Instigator"), Category="Ability|Tasks")
+	UFUNCTION(BlueprintCallable, DisplayName="Wait for Task End [CTRL]", Category="CTRL|Gas|Tasks", meta=(HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true", HideSpawnParms="Instigator"))
 	static UCTRLWaitTaskEnd* WaitTaskEnd(UGameplayAbility* OwningAbility, FName TaskInstanceName, UGameplayTask* AsyncTask);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

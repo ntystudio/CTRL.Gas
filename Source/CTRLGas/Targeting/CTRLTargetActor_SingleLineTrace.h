@@ -11,7 +11,7 @@
 
 #include "CTRLTargetActor_SingleLineTrace.generated.h"
 
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, DisplayName="Target Actor Single Line Trace [CTRL]", Category="CTRL|Gas|Targeting")
 class CTRLGAS_API ACTRLTargetActor_SingleLineTrace : public AGameplayAbilityTargetActor_SingleLineTrace
 {
 	GENERATED_BODY()
