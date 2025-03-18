@@ -33,8 +33,7 @@ public:
 		if (!Super::FilterPassesForActor(ActorToBeFiltered)) return false;
 		if (!IsValid(Interface)) return true;
 
-		auto const V = ActorToBeFiltered->GetClass()->ImplementsInterface(Interface);
-		return V;
+		return ActorToBeFiltered->GetClass()->ImplementsInterface(Interface);
 	}
 };
 
