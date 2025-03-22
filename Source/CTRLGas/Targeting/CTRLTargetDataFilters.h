@@ -5,7 +5,6 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "WorldConditionQuery.h"
 
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 
@@ -31,9 +30,9 @@ public:
 	virtual bool FilterPassesForActor(AActor const* ActorToBeFiltered) const override
 	{
 		if (!Super::FilterPassesForActor(ActorToBeFiltered)) return false;
-		if (!IsValid(Interface)) return true;
+		if (!IsValid(Interface)) return false;
 
-		return ActorToBeFiltered->GetClass()->ImplementsInterface(Interface);
+		return bReverseFilter ^ ActorToBeFiltered->GetClass()->ImplementsInterface(Interface);
 	}
 };
 
@@ -43,40 +42,44 @@ struct CTRLGAS_API FCTRLTargetDataFilterByGameplayTags : public FGameplayTargetD
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true, InlineEditConditionToggle), Category = Filter)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
 	bool bUseQuery = false;
 
 	/** Interface actors must implement to pass the filter. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true, EditCondition="bUseQuery"), Category = Filter)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
 	FGameplayTagQuery Query;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true, EditCondition="!bUseQuery"), Category = Filter)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
 	FGameplayTagContainer MatchTags;
 
 	// otherwise uses match all
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true, EditCondition="!bUseQuery"), Category = Filter)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
 	bool bMatchAny = false;
 
-	virtual bool FilterPassesForActor(AActor const* ActorToBeFiltered) const override
+	virtual bool FilterPassesForActor(AActor const* ActorToBeFiltered) const override;
+};
+
+USTRUCT(BlueprintType, DisplayName="Filter By Multiple [CTRL]", Category="CTRL|Gas|Targeting")
+struct CTRLGAS_API FCTRLTargetDataFilterByMultiple : public FGameplayTargetDataFilter
+{
+	GENERATED_BODY()
+
+public:
+	FCTRLTargetDataFilterByMultiple() = default;
+
+	FCTRLTargetDataFilterByMultiple(TArray<FGameplayTargetDataFilterHandle> InFilters, bool bRequireAll = true)
+		: FGameplayTargetDataFilter()
 	{
-		if (!Super::FilterPassesForActor(ActorToBeFiltered)) return false;
-		if (!bUseQuery && !MatchTags.IsValid()) return false;
-
-		FGameplayTagQuery QueryToUse;
-		if (bUseQuery)
-		{
-			QueryToUse = Query;
-		}
-		else
-		{
-			QueryToUse = bMatchAny ? FGameplayTagQuery::MakeQuery_MatchAnyTags(MatchTags) : FGameplayTagQuery::MakeQuery_MatchAllTags(MatchTags);
-		}
-
-		if (QueryToUse.IsEmpty()) return false;
-
-		auto const ActorTags = UCTRLGasUtils::GetGameplayTags(ActorToBeFiltered);
-		return QueryToUse.Matches(ActorTags);
+		bRequireAllFiltersPass = bRequireAll;
+		Filters = InFilters;
 	}
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	TArray<FGameplayTargetDataFilterHandle> Filters;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	bool bRequireAllFiltersPass = true;
+	virtual bool FilterPassesForActor(AActor const* ActorToBeFiltered) const override;
 };
 
 UCLASS(DisplayName="Target Data Filter Utils [CTRL]", Category="CTRL|Gas|Targeting")
@@ -85,9 +88,15 @@ class CTRLGAS_API UCTRLTargetDataFilterUtils : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make Filter By Interface Handle [CTRL]")
+	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make 'Filter By Multiple' Handle [CTRL]")
+	static FGameplayTargetDataFilterHandle MakeFilterByMultipleHandle(TArray<FGameplayTargetDataFilterHandle> Filters, AActor* FilterActor, bool bRequireAll = true);
+
+	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make 'Filter By Combined' Handle [CTRL]")
+	static FGameplayTargetDataFilterHandle MakeFilterByCombinedHandle(FGameplayTargetDataFilterHandle const& FilterA, FGameplayTargetDataFilterHandle const& FilterB, AActor* FilterActor, bool bRequireAll = true);
+
+	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make 'Filter By Interface' Handle [CTRL]")
 	static FGameplayTargetDataFilterHandle MakeFilterByInterfaceHandle(FCTRLTargetDataFilterByInterface Filter, AActor* FilterActor);
 
-	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make Filter By GameplayTags Handle [CTRL]")
+	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make 'Filter By GameplayTags' Handle [CTRL]")
 	static FGameplayTargetDataFilterHandle MakeFilterByGameplayTagsHandle(FCTRLTargetDataFilterByGameplayTags Filter, AActor* FilterActor);
 };

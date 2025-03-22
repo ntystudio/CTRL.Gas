@@ -5,6 +5,7 @@
 
 #include "Modules/ModuleManager.h"
 
+#include "Targeting/CTRLTargetDataFilters.h"
 DECLARE_LOG_CATEGORY_EXTERN(LogCTRLGas, Log, All);
 
 #define CTRL_GAS_LOG(Verbosity, ...) UE_LOG(LogCTRLGas, Verbosity, ##__VA_ARGS__)

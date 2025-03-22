@@ -6,7 +6,8 @@
 #include "DrawDebugHelpers.h"
 #include "KismetTraceUtils.h"
 
-// Sets default values
+#include "VisualLogger/VisualLogger.h"
+
 FHitResult ACTRLTargetActor_SingleLineTrace::PerformTrace(AActor* InSourceActor)
 {
 	TArray<AActor*> ActorsToIgnore;
@@ -39,13 +40,12 @@ FHitResult ACTRLTargetActor_SingleLineTrace::PerformTrace(AActor* InSourceActor)
 	if (auto* LocalReticleActor = ReticleActor.Get())
 	{
 		bool const bHitActor = (ReturnHitResult.bBlockingHit && (ReturnHitResult.HitObjectHandle.IsValid()));
+		if (bHitActor) Color = FColor::Red;
 		FVector const ReticleLocation = (bHitActor && LocalReticleActor->bSnapToTargetedActor)
 			? ReturnHitResult.HitObjectHandle.GetLocation()
 			: ReturnHitResult.Location;
-
-		LocalReticleActor->SetActorLocation(ReticleLocation);
 		LocalReticleActor->SetIsTargetAnActor(bHitActor);
-		if (bHitActor) Color = FColor::Red;
+		LocalReticleActor->SetActorLocation(ReticleLocation);
 	}
 
 #if ENABLE_DRAW_DEBUG

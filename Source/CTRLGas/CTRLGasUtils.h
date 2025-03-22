@@ -9,6 +9,10 @@
 
 #include "Abilities/GameplayAbility.h"
 
+#include "CTRLCore/CTRLActorUtils.h"
+
+#include "GameFramework/Actor.h"
+
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "CTRLGasUtils.generated.h"
@@ -65,10 +69,12 @@ public:
 	static UGameplayEffect* MakeEffect(UAbilitySystemComponent* ASC, FName const& BaseName, FCTRLGasEffectFactoryFn Factory = nullptr);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor", Keywords="Container"), DisplayName="Get Actor Gameplay Tags [CTRL]", Category="CTRL|Gas")
-	void GetActorGameplayTags(AActor const* Actor, FGameplayTagContainer& OutGameplayTags);
+	static void GetActorGameplayTags(AActor const* Actor, FGameplayTagContainer& OutGameplayTags);
 	
+	// static UObject* GetGameplayTagSource(UObject const* Object, bool bWalkOuter);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Object", Keywords="Container"), DisplayName="Get Gameplay Tags [CTRL]", Category="CTRL|Gas")
-	static FGameplayTagContainer GetGameplayTags(UObject const* Object);
+	static FGameplayTagContainer GetGameplayTags(UObject const* Object, bool bWalkOuter = true);
 
 	UFUNCTION(BlueprintCallable, meta=(ExpandBoolAsExecs="ReturnValue", Keywords="Gameplay"), DisplayName="Is Valid Ability Spec [CTRL]", Category="CTRL|Gas")
 	static bool IsValidAbilitySpec(UAbilitySystemComponent const* ASC, FGameplayAbilitySpecHandle const& Handle);

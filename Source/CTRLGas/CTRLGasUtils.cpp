@@ -1,15 +1,22 @@
 ﻿// SPDX-FileCopyrightText: © 2025 NTY.studio
 // SPDX-License-Identifier: MIT
 
-#include "CTRLGas/CTRLGasUtils.h"
+#include "CTRLGasUtils.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "GameplayEffect.h"
 #include "GameplayPrediction.h"
 
-#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
+#include "CTRLCore/CTRLActorUtils.h"
 
 #include "CTRLGas/CTRLGas.h"
+
+#include "GameFramework/Actor.h"
+
+#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(CTRLGasUtils)
 
 void UCTRLGasUtils::AssignAbilitySetByCallerMagnitude(UGameplayAbility* Ability, FGameplayTag const MagnitudeTag, double const MagnitudeValue)
 {
@@ -215,12 +222,65 @@ void UCTRLGasUtils::GetActorGameplayTags(AActor const* Actor, FGameplayTagContai
 	OutGameplayTags.AppendTags(GetGameplayTags(Actor));
 }
 
-FGameplayTagContainer UCTRLGasUtils::GetGameplayTags(UObject const* Object)
+// UObject* UCTRLGasUtils::GetGameplayTagSource(UObject const* Object, bool const bWalkOuter)
+// {
+// 	if (!IsValid(Object)) { return nullptr; }
+// 	auto CurrentTargetObject = Object;
+// 	// check object outer chain for IGameplayTagAssetInterface
+// 	while (CurrentTargetObject)
+// 	{
+// 		if (CurrentTargetObject->Implements<UGameplayTagAssetInterface>())
+// 		{
+// 			return const_cast<UObject*>(CurrentTargetObject);
+// 		}
+// 		if (!bWalkOuter) break; // only check the passed object
+// 		CurrentTargetObject = CurrentTargetObject->GetOuter();
+// 	}
+//
+// 	if (auto const Actor = UCTRLActorUtils::GetActor<AActor>(Object))
+// 	{
+// 		if (Actor->Implements<UGameplayTagAssetInterface>())
+// 		{
+// 			return const_cast<AActor*>(Actor);
+// 		}
+// 		if (auto const ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor))
+// 		{
+// 			return const_cast<UAbilitySystemComponent*>(ASC);
+// 		}
+// 	}
+// 	return nullptr;
+// }
+
+FGameplayTagContainer UCTRLGasUtils::GetGameplayTags(UObject const* Object, bool const bWalkOuter)
 {
 	FGameplayTagContainer Tags;
-	if (auto const* AsTagInterface = Cast<IGameplayTagAssetInterface>(Object))
+	if (!IsValid(Object)) { return MoveTemp(Tags); }
+	
+	auto CurrentTargetObject = Object;
+	// check object outer chain for IGameplayTagAssetInterface
+	while (CurrentTargetObject)
 	{
-		AsTagInterface->GetOwnedGameplayTags(Tags);
+		if (auto const AsGameplayTagAssetInterface = Cast<IGameplayTagAssetInterface>(CurrentTargetObject))
+		{
+			AsGameplayTagAssetInterface->GetOwnedGameplayTags(Tags);
+			return MoveTemp(Tags);
+		}
+		if (!bWalkOuter) break; // only check the passed object
+		CurrentTargetObject = CurrentTargetObject->GetOuter();
+	}
+
+	if (auto const Actor = UCTRLActorUtils::GetActor(Object))
+	{
+		if (auto const AsGameplayTagAssetInterface = Cast<IGameplayTagAssetInterface>(Actor))
+		{
+			AsGameplayTagAssetInterface->GetOwnedGameplayTags(Tags);
+			return MoveTemp(Tags);
+		}
+		if (auto const ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor))
+		{
+			ASC->GetOwnedGameplayTags(Tags);
+			return MoveTemp(Tags);
+		}
 	}
 	return MoveTemp(Tags);
 }
