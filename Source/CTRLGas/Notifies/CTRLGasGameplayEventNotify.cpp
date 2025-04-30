@@ -11,8 +11,6 @@
 
 #include "Misc/UObjectToken.h"
 
-#if WITH_EDITOR
-
 void UCTRLGasGameplayEventNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, FAnimNotifyEventReference const& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
@@ -20,6 +18,7 @@ void UCTRLGasGameplayEventNotify::Notify(USkeletalMeshComponent* MeshComp, UAnim
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, EventData.EventTag, EventData);
 }
 
+#if WITH_EDITOR
 void UCTRLGasGameplayEventNotify::ValidateAssociatedAssets()
 {
 	static FName const NAME_AssetCheck("AssetCheck");
