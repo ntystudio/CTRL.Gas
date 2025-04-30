@@ -9,7 +9,7 @@
 
 #include "CTRLGas_GroundTraceFromCamera.generated.h"
 
-UCLASS(BlueprintType, DisplayName="Target Actor Ground Trace From Camera [CTRL]", Category="CTRL|Gas|Targeting")
+UCLASS(BlueprintType)
 class CTRLGAS_API ACTRLGas_GroundTraceFromCamera : public AGameplayAbilityTargetActor_GroundTrace
 {
 	GENERATED_BODY()

@@ -9,16 +9,6 @@
 #include "CTRLGas/CTRLGasUtils.h"
 #include "CTRLGas/Abilities/CTRLGasAbility.h"
 
-int32 UCTRLAbilitySystemComponent::K2_GetLevel() const
-{
-	return GetLevel();
-}
-
-int32 UCTRLAbilitySystemComponent::K2_GetLevelOrDefault(float const InLevel) const
-{
-	return GetLevelOrDefault(InLevel);
-}
-
 int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(float const InLevel) const
 {
 	return InLevel == -1.0f ? GetLevel() : FMath::Max(1, FMath::Floor(InLevel));
@@ -47,7 +37,7 @@ int32 UCTRLAbilitySystemComponent::GetLevelOrDefault(TOptional<float> InLevel) c
 	return GetLevel();
 }
 
-UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASC(UObject const* SourceObject, bool const bWarnIfNotFound)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::Get(UObject const* SourceObject, bool const bWarnIfNotFound)
 {
 	auto* Actor = Cast<AActor>(SourceObject);
 	if (!Actor)
@@ -77,16 +67,16 @@ UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASC(UObject const* 
 	return OurASC;
 }
 
-UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASCChecked(UObject const* SourceObject)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetChecked(UObject const* SourceObject)
 {
-	auto const ASC = GetASC(SourceObject);
+	auto const ASC = Get(SourceObject);
 	check(IsValid(ASC));
 	return ASC;
 }
 
-UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetASCEnsured(UObject const* SourceObject)
+UCTRLAbilitySystemComponent* UCTRLAbilitySystemComponent::GetEnsured(UObject const* SourceObject)
 {
-	auto const ASC = GetASC(SourceObject);
+	auto const ASC = Get(SourceObject);
 	ensure(IsValid(ASC));
 	return ASC;
 }
@@ -170,7 +160,7 @@ void UCTRLAbilitySystemComponent::CancelInputActivatedAbilities(bool const bRepl
 	auto ShouldCancelFunc = [this](UCTRLGasAbility const* Ability, FGameplayAbilitySpecHandle Handle)
 	{
 		auto const ActivationPolicy = Ability->GetActivationPolicy();
-		return ActivationPolicy == ECTRLAbilityActivationPolicy::OnInputTriggered || ActivationPolicy == ECTRLAbilityActivationPolicy::WhileInputActive;
+		return ActivationPolicy == ELyraAbilityActivationPolicy::OnInputTriggered || ActivationPolicy == ELyraAbilityActivationPolicy::WhileInputActive;
 	};
 
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
@@ -249,7 +239,7 @@ void UCTRLAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 			if (AbilitySpec->Ability && !AbilitySpec->IsActive())
 			{
 				auto const* AbilityCDO = Cast<UCTRLGasAbility>(AbilitySpec->Ability);
-				if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ECTRLAbilityActivationPolicy::WhileInputActive)
+				if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ELyraAbilityActivationPolicy::WhileInputActive)
 				{
 					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 				}
@@ -275,7 +265,7 @@ void UCTRLAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 				{
 					auto const* AbilityCDO = Cast<UCTRLGasAbility>(AbilitySpec->Ability);
 
-					if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ECTRLAbilityActivationPolicy::OnInputTriggered)
+					if (AbilityCDO && AbilityCDO->GetActivationPolicy() == ELyraAbilityActivationPolicy::OnInputTriggered)
 					{
 						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 					}

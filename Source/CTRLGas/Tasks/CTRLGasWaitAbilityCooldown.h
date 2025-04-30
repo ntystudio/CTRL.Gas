@@ -16,7 +16,7 @@
 /**
  * Wait for an animation notify to be received.
  */
-UCLASS(DisplayName="Wait for Ability Cooldown [CTRL]", Category="CTRL|Gas|Tasks")
+UCLASS(DisplayName="Wait for Ability Cooldown [CTRLGas]")
 class CTRLGAS_API UCTRLGasWaitAbilityCooldown : public UCTRLGasAbilityTask
 {
 	GENERATED_BODY()
@@ -39,9 +39,9 @@ public:
 
 	UFUNCTION(
 		BlueprintCallable,
-		Category="CTRL|Gas|Tasks",
+		Category="Ability|Tasks",
 		meta = (
-			DisplayName="Wait for Ability Cooldown [CTRL]",
+			DisplayName="Wait for Ability Cooldown [CTRLGas]",
 			HidePin = "OwningAbility",
 			DefaultToSelf = "OwningAbility",
 			BlueprintInternalUseOnly = "true"

@@ -13,7 +13,7 @@
 /**
  * 
  */
-UCLASS(BlueprintType, Blueprintable, DisplayName="Physical Material With Tags [CTRL]", Category="CTRL|PhysicalMaterial")
+UCLASS(BlueprintType, Blueprintable)
 class CTRLGAS_API UCTRLGasPhysicalMaterialWithTags : public UPhysicalMaterial
 {
 	GENERATED_BODY()

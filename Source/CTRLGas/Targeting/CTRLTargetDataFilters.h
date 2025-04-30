@@ -17,7 +17,7 @@
 /**
  * Filter that checks if an actor implements a specific interface.
  */
-USTRUCT(BlueprintType, DisplayName="Filter By Interface [CTRL]", Category="CTRL|Gas|Targeting")
+USTRUCT(BlueprintType)
 struct CTRLGAS_API FCTRLTargetDataFilterByInterface : public FGameplayTargetDataFilter
 {
 	GENERATED_BODY()
@@ -36,7 +36,7 @@ public:
 	}
 };
 
-USTRUCT(BlueprintType, DisplayName="Filter By Gameplay Tags [CTRL]", Category="CTRL|Gas|Targeting")
+USTRUCT(BlueprintType)
 struct CTRLGAS_API FCTRLTargetDataFilterByGameplayTags : public FGameplayTargetDataFilter
 {
 	GENERATED_BODY()
@@ -82,11 +82,10 @@ public:
 	virtual bool FilterPassesForActor(AActor const* ActorToBeFiltered) const override;
 };
 
-UCLASS(DisplayName="Target Data Filter Utils [CTRL]", Category="CTRL|Gas|Targeting")
+UCLASS()
 class CTRLGAS_API UCTRLTargetDataFilterUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-
 public:
 	UFUNCTION(BlueprintPure, Category = "CTRL|Gas|Targeting", DisplayName="Make 'Filter By Multiple' Handle [CTRL]")
 	static FGameplayTargetDataFilterHandle MakeFilterByMultipleHandle(TArray<FGameplayTargetDataFilterHandle> Filters, AActor* FilterActor, bool bRequireAll = true);

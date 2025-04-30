@@ -10,19 +10,18 @@
 #include "CTRLGas/CTRLGasAbilitySourceInterface.h"
 
 #include "GameFramework/Character.h"
-#include "GameFramework/PlayerController.h"
 
 #include "CTRLGasAbility.generated.h"
 
 class ICTRLGasAbilitySourceInterface;
 class UCTRLAbilitySystemComponent;
 /**
- * ECTRLAbilityActivationPolicy
+ * ELyraAbilityActivationPolicy
  *
  *	Defines how an ability is meant to activate.
  */
-UENUM(BlueprintType, DisplayName="Ability Activation Policy [CTRL]", Category="CTRL|Gas|Abilities")
-enum class ECTRLAbilityActivationPolicy : uint8
+UENUM(BlueprintType)
+enum class ELyraAbilityActivationPolicy : uint8
 {
 	// Try to activate the ability when the input is triggered.
 	OnInputTriggered,
@@ -36,7 +35,7 @@ enum class ECTRLAbilityActivationPolicy : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAbilityEnded, bool, bIsCancelled);
 
-UCLASS(DisplayName="Gameplay Ability [CTRL]", Category="CTRL|Gas")
+UCLASS(DisplayName="Gameplay Ability [CTRLGas]")
 class CTRLGAS_API UCTRLGasAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
@@ -45,7 +44,7 @@ public:
 	UCTRLGasAbility(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ECTRLAbilityActivationPolicy ActivationPolicy = ECTRLAbilityActivationPolicy::OnInputTriggered;
+	ELyraAbilityActivationPolicy ActivationPolicy = ELyraAbilityActivationPolicy::OnInputTriggered;
 
 	// Effects to apply while this ability is active (note ability may not have committed yet)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -62,8 +61,7 @@ public:
 	TArray<FActiveGameplayEffectHandle> OnCommitEffectHandles;
 
 public:
-	// Get the CTRL Gameplay Ability System Component from the Ability's owner actor.
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(Keywords="Gameplay Ability System Component"))
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UCTRLAbilitySystemComponent* GetASC() const;
 
 	UFUNCTION(BlueprintCallable)
@@ -75,17 +73,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayAbilityTargetingLocationInfo MakeTargetingLocationInfoFromCamera();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, DisplayName="Get Controller From Actor Info [CTRL]", meta=(ControllerClass="/Script/Engine.PlayerController", DeterminesOutputType="ControllerClass"))
-	AController* K2_GetControllerFromActorInfo(TSubclassOf<AController> ControllerClass) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	AController* GetControllerFromActorInfo() const;
 
-	template <typename T = APlayerController>
-	T* GetControllerFromActorInfo() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, DisplayName="Get Character From Actor Info [CTRL]", meta=(CharacterClass="/Script/Engine.Character", DeterminesOutputType="CharacterClass"))
-	ACharacter* K2_GetCharacterFromActorInfo(TSubclassOf<AController> CharacterClass) const;
-
-	template <typename T = ACharacter>
-	T* GetCharacterFromActorInfo() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	ACharacter* GetCharacterFromActorInfo() const;
 
 public:
 	virtual void ActivateAbility(
@@ -115,13 +107,7 @@ public:
 	virtual void ApplyAbilityTagsToGameplayEffectSpec(FGameplayEffectSpec& Spec, FGameplayAbilitySpec* AbilitySpec) const override;
 	virtual FGameplayEffectContextHandle MakeEffectContext(FGameplayAbilitySpecHandle Handle, FGameplayAbilityActorInfo const* ActorInfo) const override;
 	// ReSharper disable once CppRedefinitionOfDefaultArgumentInOverrideFunction
-	virtual FGameplayEffectSpecHandle MakeOutgoingGameplayEffectSpec(
-		FGameplayAbilitySpecHandle const Handle,
-		FGameplayAbilityActorInfo const* ActorInfo,
-		FGameplayAbilityActivationInfo const ActivationInfo,
-		TSubclassOf<UGameplayEffect> GameplayEffectClass,
-		float Level = -1
-	) const override;
+	virtual FGameplayEffectSpecHandle MakeOutgoingGameplayEffectSpec(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo const ActivationInfo, TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level = -1) const override;
 	// wrapper to use CTRLAbilitySystemComponent's CanApplyAttributeModifiers
 	virtual bool CheckCost(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ApplyCost(FGameplayAbilitySpecHandle const Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo const ActivationInfo) const override;
@@ -129,7 +115,7 @@ public:
 	void ApplyCooldown(FGameplayAbilitySpecHandle Handle, FGameplayAbilityActorInfo const* ActorInfo, FGameplayAbilityActivationInfo ActivationInfo) const;
 
 public:
-	ECTRLAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
+	ELyraAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
 	void GetAbilitySource(
 		FGameplayAbilitySpecHandle Handle,
@@ -151,7 +137,7 @@ protected:
 	// On Ability Removed/Cleared/Revoked.
 	UFUNCTION(BlueprintImplementableEvent, Category="Ability", DisplayName="OnRemoveAbilityEvent", meta=(Keywords="Remove Clear Revoke", ScriptName="OnRemoveAbilityEvent"))
 	void K2_OnRemoveAbility();
-
+	
 	UFUNCTION(BlueprintImplementableEvent, Category="Ability", DisplayName="OnEndAbilityEvent", meta=(ScriptName="OnEndAbilityEvent"))
 	void K2_OnEndAbilityEvent(bool bWasCancelled);
 };

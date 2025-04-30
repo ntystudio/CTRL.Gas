@@ -16,7 +16,7 @@
 /**
  * Wait for an animation notify to be received.
  */
-UCLASS(DisplayName="Wait for Anim Notify [CTRL]", Category="CTRL|Gas|Tasks")
+UCLASS(DisplayName="Wait for Anim Notify [CTRLGas]")
 class CTRLGAS_API UCTRLGasWaitForAnimNotifyTask : public UCTRLGasAbilityTask
 {
 	GENERATED_BODY()
